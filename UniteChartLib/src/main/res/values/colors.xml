@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <color name="uc_text_dark">#333333</color>
+    <color name="uc_text_light">#9F9F9F</color>
+
+    <color name="uc_half_trans">#88000000</color>
+
+    <color name="uc_increase">#F64346</color>
+    <color name="uc_decrease">#15BB71</color>
+    <color name="uc_flat">#999999</color>
+    <color name="uc_orange">#F18430</color>
+    <color name="uc_blue">#2F74E9</color>
+    <color name="uc_candle_gray">#75829f</color>
+
+    <color name="uc_cross">#CCCCCC</color>
+    <color name="uc_chart_rect_solid">#EEEEEE</color>
+    <color name="uc_ts_shadow">#dfecfe</color>
+    <color name="uc_chart_grid">#F3F3F3</color>
+
+    <color name="k_indicator_color1">#3ec1d3</color>
+    <color name="k_indicator_color2">#ffa41a</color>
+    <color name="k_indicator_color3">#f64bfc</color>
+    <color name="k_indicator_color4">#9F9F9F</color>
+
+    <color name="ma1">#0091EA</color>
+    <color name="ma2">#D50000</color>
+    <color name="ma3">#FF6D00</color>
+    <color name="ma4">#6200EA</color>
+    <color name="ma5">#00BFA5</color>
+
+    <color name="boll_up">#FFAB00</color>
+    <color name="boll_md">#7C8281</color>
+    <color name="boll_dn">#AA00FF</color>
+
+    <color name="expma_n1">#0091EA</color>
+    <color name="expma_n2">#AA00FF</color>
+
+    <color name="macd_dif">#00BFA5</color>
+    <color name="macd_dea">#FFAB00</color>
+    <color name="macd_macd">#AA00FF</color>
+
+    <color name="rsi1">#00B8D4</color>
+    <color name="rsi2">#FFAB00</color>
+    <color name="rsi3">#AA00FF</color>
+
+    <color name="kdj_k">#00B8D4</color>
+    <color name="kdj_d">#FFAB00</color>
+    <color name="kdj_j">#AA00FF</color>
+
+    <color name="bias1">#00B8D4</color>
+    <color name="bias2">#FFAB00</color>
+    <color name="bias3">#AA00FF</color>
+
+    <color name="wr_1">#3ec1d3</color>
+    <color name="wr_2">#ffa41a</color>
+
+    <color name="trix">#00ABF5</color>
+    <color name="matrix">#005CF5</color>
+
+    <color name="psy">#6100D9</color>
+    <color name="psyma">#00ABF5</color>
+
+</resources>
