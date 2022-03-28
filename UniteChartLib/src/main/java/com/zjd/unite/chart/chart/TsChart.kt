@@ -30,10 +30,6 @@ const val MAIN_TYPE_TS = "MAIN_TYPE_TS"
 open class TsChart @JvmOverloads constructor(context: Context, attrs: AttributeSet? = null, defStyleAttr: Int = 0)
     : GoldenCutChart<TsLineData>(context, attrs, defStyleAttr) {
 
-    /** 行情 */
-    private var quoteBean: QuoteBean? = null
-    private var quote: SparseArray<Any>? = null
-
     /** 所有时间点 */
     protected val timeAll = linkedSetOf<Long>()
     protected val timeAllMap = linkedMapOf<Long, Float>()
@@ -58,12 +54,8 @@ open class TsChart @JvmOverloads constructor(context: Context, attrs: AttributeS
     /** 财经地雷 */
     private val financeList = mutableListOf<FinanceInfo>()
 
-    fun setQuoteBean(quoteBean: QuoteBean){
-        if(this.quoteBean == null){
-            quoteBean.recentTime = 60000 * (quoteBean.recentTime/60000)
-            this.quoteBean = quoteBean
-        }
-        mDec = quoteBean.decPointCount
+    fun setQuoteBean(dec: Int){
+        mDec = dec
     }
 
     fun setCalendarFinance(list: MutableList<CalendarBean>){
@@ -115,14 +107,14 @@ open class TsChart @JvmOverloads constructor(context: Context, attrs: AttributeS
                 timeAll.addAll(time.getAllTime())
             }
 
-            quoteBean?.let { quote ->
-                if(tsHis.pointList.isEmpty() && timeAll.isNotEmpty() && quote.recentTime !in timeAll.first()..timeAll.last()){
-                    timeAll.minByOrNull { abs(quote.recentTime - it) }?.let {
-                        quote.recentTime = it
-                        tsHis.pointList.add(TsLineData(quote))
-                    }
-                }
-            }
+//            quoteBean?.let { quote ->
+//                if(tsHis.pointList.isEmpty() && timeAll.isNotEmpty() && quote.recentTime !in timeAll.first()..timeAll.last()){
+//                    timeAll.minByOrNull { abs(quote.recentTime - it) }?.let {
+//                        quote.recentTime = it
+//                        tsHis.pointList.add(TsLineData(quote))
+//                    }
+//                }
+//            }
 
             midValue = tsHis.yersterdayClose
 

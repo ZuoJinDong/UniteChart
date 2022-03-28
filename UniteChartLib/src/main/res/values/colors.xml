@@ -8,6 +8,7 @@
 
     <color name="uc_increase">#F64346</color>
     <color name="uc_decrease">#15BB71</color>
+    <color name="uc_equal">#666666</color>
     <color name="uc_flat">#999999</color>
     <color name="uc_orange">#F18430</color>
     <color name="uc_blue">#2F74E9</color>

@@ -60,16 +60,6 @@ class KChart @JvmOverloads constructor(mContext: Context, attrs: AttributeSet? =
     private val assistChartList = mutableListOf<KAssistChart>()
     /** 周期 */
     var periodTag = ChartConstant.PERIOD_DAY
-    /** 行情 */
-    private lateinit var quoteBean: QuoteBean
-    /**
-     * 模拟交易类型
-     * 0：无轨迹
-     * 1：外盘
-     * 2：TD
-     * 3：期货
-     */
-    private var quoteType = -1
 
     /** 画笔-线 */
     private var candlePaint = Paint().apply {
@@ -86,45 +76,6 @@ class KChart @JvmOverloads constructor(mContext: Context, attrs: AttributeSet? =
     private var jjxSet = linkedSetOf<QuoteSignEntry>()
     /** 趋势先锋 */
     private var turtlesSet = linkedSetOf<QuoteSignEntry>()
-    /** 盯盘神器 */
-    private var trendMap: MutableMap<Long, List<QuoteSymbolTrendBean>> = mutableMapOf()
-
-    /** 已绘制的点（包含点击区域信息）  */
-    private val mTrendInfos: MutableList<SymbolTrendInfo> = mutableListOf()
-    /** 当前展示盯盘信息  */
-    private var clickSymbolTrendInfo: SymbolTrendInfo? = null
-    /** 盯盘开通VIP点击区域  */
-    private var trendVipRect: RectF = RectF()
-
-    /** 盯盘相关颜色  */
-    private val trendBgColor: Int = getColorById(mContext, R.color.color_e6fff6f2_e63f3c37)
-    private val trendTextColor: Int = getColorById(mContext, R.color.color_ff6a28_e79300)
-    private val trendCircleColor: Int = getColorById(mContext, R.color.color_ff6a28_ffb128)
-
-    /** 交易轨迹相关 */
-    //轨迹开关
-    var traceEnable = false
-    //成本线开关
-    var costLineEnable = false
-    //买多成本线
-    var buy = 0.0
-    //卖空成本线
-    var sell = 0.0
-    //开仓点
-    private val mTraceMapOpen = LinkedHashMap<Long, List<TradeTraceBean>>()
-    //平仓点
-    private val mTraceMapClose = LinkedHashMap<Long, List<TradeTraceBean>>()
-    private val mSimulateInfoList: MutableList<SimulateInfo> = mutableListOf()
-    private var clickSimulateInfo: SimulateInfo? = null
-    //当前页面是否包含点击信息
-    private var currentScreenContainsClickPoint = false
-    //轨迹箭头
-    private val arrowRedUp: Bitmap = getBitmapFromVectorDrawable(mContext, R.drawable.vector_up_red)
-    private val arrowGreenDown: Bitmap = getBitmapFromVectorDrawable(mContext, R.drawable.vector_down_green)
-    private val arrowBlueUp: Bitmap = getBitmapFromVectorDrawable(mContext, R.drawable.vector_up_blue)
-    private val arrowBlueDown: Bitmap = getBitmapFromVectorDrawable(mContext, R.drawable.vector_down_blue)
-    private val arrowRedUpFutures: Bitmap = BitmapFactory.decodeResource(resources, R.mipmap.trade_red_up_futures)
-    private val arrowGreenDownFutures: Bitmap = BitmapFactory.decodeResource(resources, R.mipmap.trade_green_down_futures)
 
     init {
         visibleCount = 40
@@ -132,9 +83,7 @@ class KChart @JvmOverloads constructor(mContext: Context, attrs: AttributeSet? =
     }
 
     fun setQuoteBean(quoteBean: QuoteBean){
-        this.quoteBean = quoteBean
         mDec = quoteBean.decPointCount
-        quoteType = getQuoteType()
     }
 
     /**
@@ -155,28 +104,6 @@ class KChart @JvmOverloads constructor(mContext: Context, attrs: AttributeSet? =
     fun addTurtlesSet(set: Set<QuoteSignEntry>){
         turtlesSet.addAll(set)
         turtlesSet.sortedBy { it.time }
-    }
-
-    /** 盯盘神器 */
-    fun addTrendMap(map: MutableMap<Long, MutableList<QuoteSymbolTrendBean>>){
-        trendMap.putAll(map)
-        DataFormatHelper.calculateSymbolTrend(listFull, trendMap)
-        postInvalidate()
-    }
-
-    /**
-     * 设置交易轨迹
-     */
-    fun addTradeTraceList(list: List<TradeTraceBean>?){
-        list?.let {
-            formatTraceMap(it, true).let { openMap ->
-                mTraceMapOpen.putAll(openMap)
-            }
-            formatTraceMap(it, false).let { closeMap ->
-                mTraceMapClose.putAll(closeMap)
-            }
-            postInvalidate()
-        }
     }
 
     /**
@@ -418,11 +345,6 @@ class KChart @JvmOverloads constructor(mContext: Context, attrs: AttributeSet? =
         }
     }
 
-    override fun drawYLeftValue(canvas: Canvas) {
-        super.drawYLeftValue(canvas)
-        drawTradeCostLine(canvas)
-    }
-
     /**
      * 当前首条数据
      */
@@ -513,7 +435,6 @@ class KChart @JvmOverloads constructor(mContext: Context, attrs: AttributeSet? =
                 sourceVisible = list
                 val listMerge = QuoteUtils.mergeKHisData(sourceVisible, periodTag)
                 DataFormatHelper.calculateK(listMerge)
-                DataFormatHelper.calculateSymbolTrend(listMerge, trendMap)
                 return listMerge
             }
 
@@ -534,59 +455,8 @@ class KChart @JvmOverloads constructor(mContext: Context, attrs: AttributeSet? =
         })
     }
 
-    override fun drawStaticData(canvas: Canvas) {
-        super.drawStaticData(canvas)
-        drawClickSymbolTrendInfo(canvas)
-    }
-
-    override fun onLongPress(ev: MotionEvent) {
-        if(clickSymbolTrendInfo == null){
-            super.onLongPress(ev)
-        }
-    }
-
     override fun onSingleTapUp(ev: MotionEvent): Boolean {
         if(!showCross){
-            // 获取点中区域(盯盘神器)
-            val clickTrend = mTrendInfos.lastOrNull { it.rect.contains(ev.x - marginLeft, ev.y - marginTop) }
-            if(clickTrend != null){
-                if(canvasBitmap == null)
-                    canvasBitmap = getBackgroundBitmap()
-                clickSymbolTrendInfo = clickTrend
-                postInvalidate()
-                return true
-            }else if(trendVipRect.contains(ev.x - marginLeft, ev.y - marginTop)){
-                canvasBitmap = null
-                clickSymbolTrendInfo = null
-                trendVipRect.set(0f, 0f, 0f, 0f)
-                postInvalidate()
-                if (!UserManager.hasPrivilege(VipRightEnum.VipSymbolTrend.code)) {
-                    QuoteStatUtil.onReplayVip()
-                    JumpUtils.openWebView(Url.Html.VIP_URL, false)
-                }
-                return true
-            }else if(canvasBitmap != null || clickSymbolTrendInfo != null){
-                canvasBitmap = null
-                clickSymbolTrendInfo = null
-                trendVipRect.set(0f, 0f, 0f, 0f)
-                postInvalidate()
-                return true
-            }
-
-            val lastTradeTrace = mSimulateInfoList.lastOrNull { it.rectF.contains(ev.x - marginLeft, ev.y - marginTop) }
-
-            if(lastTradeTrace != null){
-                clickSimulateInfo = lastTradeTrace
-                postInvalidate()
-                return true
-            }
-
-            if(clickSimulateInfo != null){
-                clickSimulateInfo = null
-                postInvalidate()
-                return true
-            }
-
             switchMain()
         }
         return super.onSingleTapUp(ev)
@@ -958,8 +828,6 @@ class KChart @JvmOverloads constructor(mContext: Context, attrs: AttributeSet? =
         candleWidth = candleHalfWidth*2
         var minIndex = -1
         var maxIndex = -1
-        mTrendInfos.clear()
-        mSimulateInfoList.clear()
 
         listVisible.forEachIndexed { index, kLine ->
             kLine.run {
@@ -994,21 +862,8 @@ class KChart @JvmOverloads constructor(mContext: Context, attrs: AttributeSet? =
                 canvas.drawRect(chartX - candleHalfWidth, openY, chartX + candleHalfWidth, closeY, candlePaint)
                 //下直线
                 canvas.drawLine(chartX, lowY, chartX, max(openY, closeY), candlePaint)
-
-                addSymbolTrend(kLine)
-
-                //交易轨迹
-                if(traceInfo.openList.isNullOrEmpty()){
-                    traceInfo.openList = mTraceMapOpen[time]
-                }
-                if(traceInfo.closeList.isNullOrEmpty()){
-                    traceInfo.closeList = mTraceMapClose[time]
-                }
-                drawTradePath(canvas, kLine)
             }
         }
-
-        drawTradePathLine(canvas)
 
         drawMaxAndMin(canvas, minIndex, false)
         drawMaxAndMin(canvas, maxIndex, true)
@@ -1020,7 +875,6 @@ class KChart @JvmOverloads constructor(mContext: Context, attrs: AttributeSet? =
      */
     private fun drawLine(canvas: Canvas) {
         val path = Path()
-        mTrendInfos.clear()
 
         listVisible.forEachIndexed { index, kLine ->
             kLine.apply {
@@ -1030,8 +884,6 @@ class KChart @JvmOverloads constructor(mContext: Context, attrs: AttributeSet? =
                 }else{
                     path.lineTo(chartX, getValueY(high))
                 }
-
-                addSymbolTrend(kLine)
             }
         }
         linePaint.style = Paint.Style.STROKE
@@ -1039,472 +891,11 @@ class KChart @JvmOverloads constructor(mContext: Context, attrs: AttributeSet? =
         canvas.drawPath(path, linePaint)
     }
 
-    override fun drawXValue(canvas: Canvas) {
-        drawSymbolTrend(canvas)
-        drawTradePathText(canvas)
-        super.drawXValue(canvas)
-    }
-
     override fun requestParentDisallowInterceptTouchEvent(disallowIntercept: Boolean) {
         assistChartList.forEach {
             it.requestParentDisallowInterceptTouchEvent(disallowIntercept)
         }
         super.requestParentDisallowInterceptTouchEvent(disallowIntercept)
-    }
-
-    /**
-     * 交易轨迹价格浮层
-     */
-    private fun drawTradePathText(canvas: Canvas) {
-        if (candleWidth < dp2px(2f) || !currentScreenContainsClickPoint)
-            return
-
-        clickSimulateInfo?.let { info ->
-            if(mSimulateInfoList.any { it.id == info.id && it.open == info.open }){
-                val text: String
-                if (!info.open) {
-                    text = "平" + formatDouble(info.price)
-                    linePaint.color = resources.getColor(R.color.equal_color)
-                } else if (info.orderType == 0) {
-                    text = "多" + formatDouble(info.price)
-                    linePaint.color = resources.getColor(R.color.uc_increase)
-                } else {
-                    text = "空" + formatDouble(info.price)
-                    linePaint.color = resources.getColor(R.color.uc_decrease)
-                }
-                linePaint.style = Paint.Style.FILL
-                val rect = Rect()
-                textPaint.color = Color.WHITE
-                textPaint.getTextBounds(text, 0, text.length, rect)
-                val x = info.x - rect.width() / 2f
-                val y: Float = info.rectF.top - rect.height() / 2f
-                val rectF = RectF(x - rect.height() / 5f, y - rect.height() - rect.height() / 8f, x + rect.width() + rect.height() / 5f, y + rect.height() / 3f)
-                canvas.drawRect(rectF, linePaint)
-                canvas.drawText(text, x, y, textPaint)
-            }
-        }
-    }
-
-    /**
-     * 持仓成本线
-     */
-    private fun drawTradeCostLine(canvas: Canvas) {
-        if(QuoteDao.getTradeCostStatus()){
-            linePaint.pathEffect = dashPathEffect
-            val margin = dp2px(1f)
-            var buyY = 0f
-            var sellY = 0f
-            if (buy != 0.0) {
-                linePaint.color = colorRed
-                buyY = getValueY(buy)
-                linePaint.style = Paint.Style.STROKE
-                canvas.drawLine(0f, buyY, chartWidth, buyY, linePaint)
-            }
-            if (sell != 0.0) {
-                linePaint.color = colorGreen
-                sellY = getValueY(sell)
-                linePaint.style = Paint.Style.STROKE
-                canvas.drawLine(0f, sellY, chartWidth, sellY, linePaint)
-            }
-            linePaint.pathEffect = null
-
-            //价格
-            if (buy != 0.0 || sell != 0.0) {
-                linePaint.style = Paint.Style.FILL
-                textPaint.color = Color.WHITE
-                if (buy != 0.0 && sell != 0.0) {
-                    val bound = Rect()
-                    val buyStr = "多$buy"
-                    textPaint.getTextBounds(buyStr, 0, buyStr.length, bound)
-                    val gapHeight = Math.abs(buyY - sellY)
-                    val rectHeight = bound.height() + margin * 2
-                    if (gapHeight < rectHeight) {
-                        val offset = (rectHeight - gapHeight) / 2
-                        if (sellY > buyY) {
-                            sellY += offset
-                            buyY -= offset
-                        } else {
-                            sellY -= offset
-                            buyY += offset
-                        }
-                    }
-                }
-                if (buy != 0.0) {
-                    linePaint.color = colorRed
-                    val bound = Rect()
-                    val buyStr = "多$buy"
-                    textPaint.getTextBounds(buyStr, 0, buyStr.length, bound)
-                    canvas.drawRect(RectF(0f, buyY - bound.height() / 2f - margin, bound.width() + 2 * margin, buyY + bound.height() / 2f + margin), linePaint)
-                    canvas.drawText(buyStr, margin, buyY + bound.height() / 2.5f, textPaint)
-                }
-                if (sell != 0.0) {
-                    linePaint.color = colorGreen
-                    val bound = Rect()
-                    val sellStr = "空$sell"
-                    textPaint.getTextBounds(sellStr, 0, sellStr.length, bound)
-                    canvas.drawRect(RectF(0f, sellY - bound.height() / 2f - margin, bound.width() + 2 * margin, sellY + bound.height() / 2f + margin), linePaint)
-                    canvas.drawText(sellStr, margin, sellY + bound.height() / 2.5f, textPaint)
-                }
-            }
-        }
-    }
-
-    /**
-     * 买卖轨迹连线
-     */
-    private fun drawTradePathLine(canvas: Canvas) {
-        val tradeTracePaths: List<TracePathInfo> = getTradeTracePaths(mSimulateInfoList)
-        linePaint.pathEffect = dashPathEffect
-        for (i in tradeTracePaths.indices) {
-            val info: TracePathInfo = tradeTracePaths[i]
-            linePaint.color = info.color
-            canvas.drawLine(info.startX, info.startY, info.endX, info.endY, linePaint)
-        }
-        linePaint.pathEffect = null
-    }
-
-    /**
-     * 获取两个箭头坐标
-     */
-    private fun getTradeTracePaths(list: List<SimulateInfo>): List<TracePathInfo>{
-        val pathInfoList: MutableList<TracePathInfo> = mutableListOf()
-        list.filter { !it.open }.forEachIndexed { _, closeInfo ->
-            list.firstOrNull { it.open && it.id == closeInfo.id }?.let { openInfo ->
-                val color: Int = if(openInfo.orderType == 0){
-                    //买多
-                    getSpecialTxtColor(context, closeInfo.price - openInfo.price)
-                }else{
-                    //卖空
-                    getSpecialTxtColor(context, openInfo.price - closeInfo.price)
-                }
-                pathInfoList.add(TracePathInfo(openInfo.x, openInfo.y, closeInfo.x, closeInfo.y, color))
-            }
-        }
-        return pathInfoList
-    }
-
-    /**
-     * 交易轨迹
-     */
-    private fun drawTradePath(canvas: Canvas, bean: KLineData) {
-        if (quoteType == 0 || mainType == MAIN_TYPE_QSXF || mainType == MAIN_TYPE_JJCL || !couldDrawTradeTrace()) {
-            return
-        }else if (quoteType == Constant.Simulate.TYPE_OUTER && !QuoteDao.getTradePathStatus()) {
-            return
-        } else if ((quoteType == Constant.Simulate.TYPE_TD || quoteType == Constant.Simulate.TYPE_FUTURES) && !QuoteDao.getTradeDealStatus()) {
-            return
-        }
-
-        val x = bean.chartX
-
-        val arrowWidth = if (candleWidth > dp2px(20f)) {
-            dp2px(20f)
-        } else {
-            candleWidth
-        }
-
-        //测试
-//        if(openList == null)
-//            openList = mutableListOf()
-//        val bean1 = TradeTraceBean()
-//        bean1.id = bean.time
-//        bean1.openPrc = bean.low
-//        bean1.closePrc = bean.high
-//        bean1.orderType = 0
-//        openList.add(bean1)
-
-        //开仓
-        bean.traceInfo.openList?.toMutableList()?.let { openList ->
-            openList.forEach { tradeTrace ->
-                val bitmap: Bitmap
-                val rectF: RectF
-                val rect: Rect
-                val y: Float
-                if (quoteType == Constant.Simulate.TYPE_OUTER) {
-
-                    y = getValueY(tradeTrace.openPrc)
-
-                    val simulateInfo = SimulateInfo()
-                    if (tradeTrace.orderType == 0) {
-                        bitmap = arrowRedUp
-                        rectF = RectF(x - arrowWidth / 2, y, x + arrowWidth / 2, y + arrowWidth * bitmap.height / bitmap.width)
-                        simulateInfo.y = rectF.top
-                    } else {
-                        bitmap = arrowGreenDown
-                        rectF = RectF(x - arrowWidth / 2, y - arrowWidth * bitmap.height / bitmap.width, x + arrowWidth / 2, y)
-                        simulateInfo.y = rectF.bottom
-                    }
-
-                    rect = Rect(0, 0, bitmap.width, bitmap.height)
-                    simulateInfo.id = tradeTrace.id
-                    simulateInfo.open = true
-                    simulateInfo.x = x
-                    simulateInfo.price = tradeTrace.openPrc
-                    simulateInfo.orderType = tradeTrace.orderType
-                    simulateInfo.rectF = rectF
-                    //                mOpenInfo.put(tradeTrace.getId(),simulateInfo);
-                    mSimulateInfoList.add(simulateInfo)
-
-                    clickSimulateInfo?.let { info ->
-                        if (info.open && info.id == tradeTrace.id) {
-                            currentScreenContainsClickPoint = true
-                            info.x = simulateInfo.x
-                            info.y = simulateInfo.y
-                            info.rectF = simulateInfo.rectF
-                        }
-                    }
-
-                    if(candleWidth > dp2px(2f))
-                        canvas.drawBitmap(bitmap, rect, rectF, linePaint)
-                } else {
-                    if (tradeTrace.orderType == 0) {
-                        y = getValueY(bean.low) + dp2px(5f)
-                        bitmap = arrowRedUpFutures
-                        rectF = RectF(x - arrowWidth / 2, y, x + arrowWidth / 2, y + arrowWidth * bitmap.height / bitmap.width)
-                    } else {
-                        y = getValueY(bean.high) - dp2px(5f)
-                        bitmap = arrowGreenDownFutures
-                        rectF = RectF(x - arrowWidth / 2, y - arrowWidth * bitmap.height / bitmap.width, x + arrowWidth / 2, y)
-                    }
-                    rect = Rect(0, 0, bitmap.width, bitmap.height)
-                    if(candleWidth > dp2px(2f))
-                        canvas.drawBitmap(bitmap, rect, rectF, linePaint)
-                }
-
-            }
-        }
-
-
-
-        //        if(closeList == null)
-//            closeList = mutableListOf()
-//        closeList.add(bean1)
-
-        //平仓
-        bean.traceInfo.closeList?.toMutableList()?.let { closeList ->
-            closeList.forEachIndexed { index, tradeTrace ->
-                val bitmap: Bitmap
-                val rectF: RectF
-                val rect: Rect
-                val y: Float
-                if (quoteType == Constant.Simulate.TYPE_OUTER) {
-                    y = getValueY(tradeTrace.closePrc)
-                    val simulateInfo = SimulateInfo()
-                    if (tradeTrace.orderType == 0) {
-                        bitmap = arrowBlueDown
-                        rectF = RectF(x - arrowWidth / 2, y - arrowWidth * bitmap.height / bitmap.width, x + arrowWidth / 2, y)
-                        simulateInfo.y = rectF.bottom
-                    } else {
-                        bitmap = arrowBlueUp
-                        rectF = RectF(x - arrowWidth / 2, y, x + arrowWidth / 2, y + arrowWidth * bitmap.height / bitmap.width)
-                        simulateInfo.y = rectF.top
-                    }
-                    rect = Rect(0, 0, bitmap.width, bitmap.height)
-                    simulateInfo.id = tradeTrace.id
-                    simulateInfo.open = false
-                    simulateInfo.x = x
-                    simulateInfo.price = tradeTrace.closePrc
-                    simulateInfo.orderType = tradeTrace.orderType
-                    simulateInfo.rectF = rectF
-                    //                mCloseInfo.put(tradeTrace.getId(),simulateInfo);
-                    mSimulateInfoList.add(simulateInfo)
-
-                    clickSimulateInfo?.let { info ->
-                        if (!info.open && info.id == tradeTrace.id) {
-                            currentScreenContainsClickPoint = true
-                            info.x = simulateInfo.x
-                            info.y = simulateInfo.y
-                            info.rectF = simulateInfo.rectF
-                        }
-                    }
-                } else {
-                    if (tradeTrace.orderType == 0) {
-                        y = getValueY(bean.high) - dp2px(5f)
-                        bitmap = arrowGreenDownFutures
-                        rectF = RectF(x - arrowWidth / 2, y - arrowWidth * bitmap.height / bitmap.width, x + arrowWidth / 2, y)
-                    } else {
-                        y = getValueY(bean.low) + dp2px(5f)
-                        bitmap = arrowRedUpFutures
-                        rectF = RectF(x - arrowWidth / 2, y, x + arrowWidth / 2, y + arrowWidth * bitmap.height / bitmap.width)
-                    }
-                    rect = Rect(0, 0, bitmap.width, bitmap.height)
-                }
-                if(candleWidth > dp2px(2f))
-                    canvas.drawBitmap(bitmap, rect, rectF, linePaint)
-            }
-        }
-    }
-
-    /**
-     * 是否绘制交易轨迹
-     */
-    private fun couldDrawTradeTrace(): Boolean {
-        return periodTag == ChartConstant.PERIOD_1_MINUTE
-                || periodTag == ChartConstant.PERIOD_3_MINUTE
-                || periodTag == ChartConstant.PERIOD_5_MINUTE
-                || periodTag == ChartConstant.PERIOD_10_MINUTE
-                || periodTag == ChartConstant.PERIOD_15_MINUTE
-                || periodTag == ChartConstant.PERIOD_20_MINUTE
-                || periodTag == ChartConstant.PERIOD_30_MINUTE
-                || periodTag == ChartConstant.PERIOD_60_MINUTE
-                //                || periodTag == QuoteConstant.PERIOD_4_HOUR
-                || periodTag == ChartConstant.PERIOD_DAY
-    }
-
-    /**
-     * 获取模拟交易类型
-     * @return
-     * 0：无轨迹
-     * 1：外盘
-     * 2：TD
-     * 3：期货
-     */
-    fun getQuoteType(): Int {
-        return run {
-            val boardId: Int = quoteBean.boardId
-            when {
-                QuoteUtils.isFutures(boardId) -> Constant.Simulate.TYPE_FUTURES
-                boardId == BoardConstant.BOARD_TD -> Constant.Simulate.TYPE_TD
-                else -> Constant.Simulate.TYPE_OUTER
-            }
-        }
-    }
-
-    /** 盯盘神器点半径 */
-    private val trendRadius = dp2px(3f)
-
-    /**
-     * 添加盯盘神器信息
-     */
-    private fun addSymbolTrend(data: KLineData) {
-        data.trendList.firstOrNull()?.let {
-            mTrendInfos.add(SymbolTrendInfo(data.chartX, RectF(data.chartX - 4 * trendRadius, chartHeight - 4 * trendRadius, data.chartX + 4 * trendRadius, chartHeight + 4 * trendRadius), it))
-        }
-    }
-
-    /**
-     * 盯盘神器 点
-     */
-    private fun drawSymbolTrend(canvas: Canvas) {
-        linePaint.style = Paint.Style.FILL
-        linePaint.color = trendCircleColor
-        mTrendInfos.forEachIndexed { index, symbolTrendInfo ->
-            canvas.drawCircle(symbolTrendInfo.x, chartHeight, trendRadius, linePaint)
-        }
-    }
-
-    /**
-     * 需要展示的盯盘神器信息
-     */
-    private fun drawClickSymbolTrendInfo(canvas: Canvas) {
-        clickSymbolTrendInfo?.let { trendInfo ->
-            val f10 = dp2px(10f)
-            val f12 = dp2px(12f)
-            val trend: QuoteSymbolTrendBean = trendInfo.trend
-            var bgWidth = (chartWidth * 0.45).toInt()
-            val textWidth = (chartWidth * 0.45f - f10).roundToInt()
-            val bgHeight: Int
-            linePaint.pathEffect = dashPathEffect
-            linePaint.color = trendCircleColor
-            canvas.drawLine(trendInfo.x, chartHeight, trendInfo.x, chartHeight / 2f, linePaint)
-            linePaint.pathEffect = null
-            linePaint.style = Paint.Style.FILL
-            trendVipRect.set(0f, 0f, 0f, 0f)
-            val orangeLine = RectF()
-            val radius: FloatArray
-            val roundR: Float = f10 / 2
-            val clipPath = Path()
-            if(UserManager.hasPrivilege(VipRightEnum.VipSymbolTrend.getCode())){
-                val bitmap = if (trend.descriptionType == 1) {
-                    BitmapFactory.decodeResource(resources, R.mipmap.vip_zcyltcq)
-                } else {
-                    BitmapFactory.decodeResource(resources, R.mipmap.vip_zdfxb)
-                }
-                val src = Rect(0, 0, bitmap.width, bitmap.height)
-                val dst = RectF(0f, 0f, f10 * bitmap.width / bitmap.height, f10)
-                val textContent = StaticLayout(trend.eventContent, textPaint, textWidth, Layout.Alignment.ALIGN_NORMAL, 1.0f, 0.0f, true)
-                val textAnalysis = StaticLayout(trend.analysis, textPaint, textWidth, Layout.Alignment.ALIGN_NORMAL, 1.0f, 0.0f, true)
-                bgHeight = (dst.height() + textContent.height + textAnalysis.height + f10 * 1.5).roundToInt()
-                if (trendInfo.x < chartWidth / 2f) {
-                    //点在左侧，信息绘制右侧
-                    radius = floatArrayOf(0f, 0f, roundR, roundR, roundR, roundR, 0f, 0f)
-                    trendVipRect.set(trendInfo.x + f12, (chartHeight - bgHeight) / 2f, trendInfo.x + f12 + bgWidth, (chartHeight + bgHeight) / 2f)
-                    orangeLine[trendVipRect.left, trendVipRect.top, trendVipRect.left - f10 / 4f] = trendVipRect.bottom
-                    canvas.drawLine(trendInfo.x, chartHeight / 2f, trendInfo.x + f12, chartHeight / 2f, linePaint)
-                } else {
-                    //点在右侧，信息绘制左侧
-                    radius = floatArrayOf(roundR, roundR, 0f, 0f, 0f, 0f, roundR, roundR)
-                    trendVipRect.set(trendInfo.x - f12 - bgWidth, (chartHeight - bgHeight) / 2f, trendInfo.x - f12, (chartHeight + bgHeight) / 2f)
-                    orangeLine[trendVipRect.right, trendVipRect.top, trendVipRect.right + f10 / 4f] = trendVipRect.bottom
-                    canvas.drawLine(trendInfo.x, chartHeight / 2f, trendInfo.x - f12, chartHeight / 2f, linePaint)
-                }
-                canvas.drawRect(orangeLine, linePaint)
-                linePaint.color = trendBgColor
-                canvas.save()
-                clipPath.addRoundRect(trendVipRect, radius, Path.Direction.CW)
-                canvas.clipPath(clipPath)
-                linePaint.maskFilter = BlurMaskFilter(f10 / 4, BlurMaskFilter.Blur.INNER)
-                canvas.drawRect(trendVipRect, linePaint)
-                linePaint.maskFilter = null
-                canvas.restore()
-                canvas.save()
-                canvas.translate(trendVipRect.left + f10 / 2f, trendVipRect.top + f10 / 2f)
-                textPaint.textAlign = Paint.Align.LEFT
-                canvas.drawBitmap(bitmap, src, dst, null)
-                canvas.translate(0f, dst.height() + f10 / 4)
-                textPaint.color = textColor
-                textContent.draw(canvas)
-                canvas.translate(0f, textContent.height + f10 / 4)
-                textPaint.color = trendTextColor
-                textAnalysis.draw(canvas)
-                canvas.restore()
-            } else {
-//                Bitmap bitmap = ResourceUtilsKt.getBitmapFromVectorDrawable(getContext(),R.mipmap.vip_trend_open);
-//                Rect src = new Rect(0,0,bitmap.getWidth(), bitmap.getHeight());
-//                setLayerType(LAYER_TYPE_SOFTWARE, null);
-                val bound = Rect()
-                val vipTitle = "【曲合大会员】专享盯盘神器"
-                val vipOpen = "立即开通>"
-                textPaint.isFakeBoldText = true
-                textPaint.textSize = sp2px(10f)
-                textPaint.getTextBounds(vipTitle, 0, vipTitle.length, bound)
-                bgWidth = (bound.width() + f12 * 2).roundToInt()
-                bgHeight = dp2px(60f).roundToInt()
-                if (trendInfo.x < chartWidth / 2f) {
-                    //点在左侧，信息绘制右侧
-                    radius = floatArrayOf(0f, 0f, roundR, roundR, roundR, roundR, 0f, 0f)
-                    trendVipRect.set(trendInfo.x + f12, (chartHeight - bgHeight) / 2f, trendInfo.x + f12 + bgWidth, (chartHeight + bgHeight) / 2f)
-                    orangeLine[trendVipRect.left, trendVipRect.top, trendVipRect.left - f10 / 4f] = trendVipRect.bottom
-                    canvas.drawLine(trendInfo.x, chartHeight / 2f, trendInfo.x + f12, chartHeight / 2f, linePaint)
-                } else {
-                    //点在右侧，信息绘制左侧
-                    radius = floatArrayOf(roundR, roundR, 0f, 0f, 0f, 0f, roundR, roundR)
-                    trendVipRect.set(trendInfo.x - f12 - bgWidth, (chartHeight - bgHeight) / 2f, trendInfo.x - f12, (chartHeight + bgHeight) / 2f)
-                    orangeLine[trendVipRect.right, trendVipRect.top, trendVipRect.right + f10 / 4f] = trendVipRect.bottom
-                    canvas.drawLine(trendInfo.x, chartHeight / 2f, trendInfo.x - f12, chartHeight / 2f, linePaint)
-                }
-                canvas.drawRect(orangeLine, linePaint)
-                linePaint.color = trendBgColor
-                canvas.save()
-                clipPath.addRoundRect(trendVipRect, radius, Path.Direction.CW)
-                canvas.clipPath(clipPath)
-                linePaint.maskFilter = BlurMaskFilter(f10 / 4, BlurMaskFilter.Blur.INNER)
-                canvas.drawRect(trendVipRect, linePaint)
-                linePaint.maskFilter = null
-                canvas.restore()
-                textPaint.color = textColorDark
-                var textX: Float = (trendVipRect.left + trendVipRect.right - bound.width() - f12) / 2f
-                var textY: Float = (trendVipRect.top + trendVipRect.bottom) / 2f - bound.height() * 0.3f
-                canvas.drawText(vipTitle, textX, textY, textPaint)
-                textPaint.isFakeBoldText = false
-                textPaint.textSize = sp2px(9f)
-                textPaint.getTextBounds(vipOpen, 0, vipOpen.length, bound)
-                textX = (trendVipRect.left + trendVipRect.right - bound.width()) / 2f
-                textY = (trendVipRect.top + trendVipRect.bottom) / 2f + bound.height() * 1.3f
-                textPaint.color = trendTextColor
-                canvas.drawText(vipOpen, textX, textY, textPaint)
-            }
-        }
     }
 
     /**
@@ -1652,13 +1043,6 @@ class KChart @JvmOverloads constructor(mContext: Context, attrs: AttributeSet? =
         }
     }
 
-    /**
-     * 盯盘神器
-     */
-    private class SymbolTrendInfo(val x: Float, //信息点横坐标
-                                  val rect: RectF,  //展示区域
-                                  val trend: QuoteSymbolTrendBean)//盯盘神器信息
-
     override fun lastVisibleChanged() {
 
     }
@@ -1698,7 +1082,7 @@ class KChart @JvmOverloads constructor(mContext: Context, attrs: AttributeSet? =
             }
             MotionEvent.ACTION_UP -> {
                 touched = false
-                if(showCross && !QuoteDao.getCursorEnable()){
+                if(showCross){
                     postDelayed(cross, 3000)
                 }
             }
@@ -1707,8 +1091,7 @@ class KChart @JvmOverloads constructor(mContext: Context, attrs: AttributeSet? =
     }
 
     private var cross = Runnable {
-        if(!QuoteDao.getCursorEnable())
-            hideCross()
+        hideCross()
     }
 
     private fun removeKCallbacks() {
@@ -1754,8 +1137,6 @@ class KChart @JvmOverloads constructor(mContext: Context, attrs: AttributeSet? =
      * 更新推送数据
      */
     fun updateQuote(quoteBean: QuoteBean) {
-        this.quoteBean = quoteBean
-
         if(dataInited && updatePeriod.contains(periodTag)){
             val lastVisible = listVisible.lastOrNull()
             val lastSource = source.lastOrNull()

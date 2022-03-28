@@ -165,18 +165,6 @@ object DataFormatHelper {
     }
 
     /**
-     * 合并盯盘神器
-     */
-    fun calculateSymbolTrend(dataList: List<KLineData>,
-                             trendMap: Map<Long, List<QuoteSymbolTrendBean>>) {
-        dataList.forEach {
-            trendMap[it.time]?.let { list ->
-                it.trendList = list.toMutableList()
-            }
-        }
-    }
-
-    /**
      * 计算CR
      */
     private fun calculateCR(dataList: List<KLineData>) {

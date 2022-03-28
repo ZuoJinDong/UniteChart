@@ -1,5 +1,6 @@
 package com.zjd.unite.chart.utils
 
+import com.blankj.utilcode.util.TimeUtils
 import java.text.ParseException
 import java.text.SimpleDateFormat
 import java.util.*
@@ -135,11 +136,10 @@ fun getDate(dateStr: String?, format: SimpleDateFormat): Date? {
     }
 }
 
-fun getMinuteDate(dateStr: String?): Date? {
-    synchronized(com.sangame.jjhcps.base.util.DateUtil.MINUTE) {
-        return com.sangame.jjhcps.base.util.DateUtil.getDate(
-            dateStr,
-            com.sangame.jjhcps.base.util.DateUtil.MINUTE
-        )
-    }
+/**
+ * 获取当前分钟时间
+ */
+fun getCurrentMinuteLong(): Long{
+    val format = "yyyy-MM-dd HH:mm"
+    return TimeUtils.string2Millis(TimeUtils.millis2String(System.currentTimeMillis(), format), format)
 }

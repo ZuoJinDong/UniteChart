@@ -55,5 +55,11 @@ class QuoteBean {
     /** 涨停价 */
     var limitMax: Double = 0.0
 
+    var holding: Double = 0.0
+
+    var amount: Double = 0.0
+
+    var vol: Long = 0
+
 
 }

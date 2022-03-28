@@ -6,14 +6,61 @@
     android:orientation="vertical"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    tools:ignore="UsingOnClickInXml,HardcodedText"
     tools:context=".MainActivity">
 
-    <Button
-        android:text="主页"
-        android:id="@+id/btn_home"
-        android:onClick="onClick"
+    <FrameLayout
+        android:id="@+id/container"
+        android:layout_weight="1"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        tools:ignore="UsingOnClickInXml" />
+        android:layout_height="0dp"/>
+
+    <LinearLayout
+        android:weightSum="5"
+        android:orientation="horizontal"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <Button
+            android:text="分时"
+            android:id="@+id/btn_ts"
+            android:onClick="onClick"
+            android:layout_weight="1"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content" />
+
+        <Button
+            android:text="K"
+            android:id="@+id/btn_k"
+            android:onClick="onClick"
+            android:layout_weight="1"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content" />
+
+        <Button
+            android:text="多日"
+            android:id="@+id/btn_duo"
+            android:onClick="onClick"
+            android:layout_weight="1"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content" />
+
+        <Button
+            android:text="多日"
+            android:id="@+id/btn_duo_multi"
+            android:onClick="onClick"
+            android:layout_weight="1"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content" />
+
+        <Button
+            android:text="闪电图"
+            android:id="@+id/btn_flash"
+            android:onClick="onClick"
+            android:layout_weight="1"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content" />
+
+    </LinearLayout>
 
 </LinearLayout>
