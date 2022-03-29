@@ -1,4 +1,4 @@
-package com.zjd.demo
+package com.zjd.demo.frag
 
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -20,8 +20,6 @@ abstract class BaseChartFragment<T: BaseQuoteData> : Fragment(), BaseChart.OnDat
     protected var mQuoteId = 0
     /** 周期 */
     protected var mPeriod = 0
-    /** 行情 */
-    protected lateinit var quoteBean: QuoteBean
 
     /** 更新数据 */
     abstract fun updateQuote(quote: QuoteBean)

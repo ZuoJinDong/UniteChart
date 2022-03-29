@@ -1,0 +1,76 @@
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/rootView"
+    android:orientation="vertical"
+    android:clipToPadding="false"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    tools:ignore="SmallSp">
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <TextView
+            android:id="@+id/tv_params"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="5dp"
+            android:gravity="center_vertical"
+            android:minHeight="30dp"
+            android:paddingVertical="3dp"
+            android:textSize="10sp"
+            android:textStyle="bold"
+            tools:text="123456" />
+
+        <ToggleButton
+            android:id="@+id/btn_switch_ts_mode"
+            android:layout_width="50dp"
+            android:layout_height="19dp"
+            android:layout_alignParentEnd="true"
+            android:layout_centerVertical="true"
+            android:layout_gravity="center_vertical|end"
+            android:layout_marginEnd="15dp"
+            android:background="@color/teal_700"
+            android:checked="true"
+            android:gravity="center"
+            android:textColor="@color/white"
+            android:textOn="连续走势"
+            android:textOff="叠加走势"
+            android:textSize="10sp" />
+
+    </RelativeLayout>
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <com.zjd.unite.chart.chart.TsDuoChart
+            android:visibility="gone"
+            tools:visibility="visible"
+            android:id="@+id/tsDuoChart"
+            android:layout_width="match_parent"
+            android:layout_height="400dp" />
+
+        <com.zjd.unite.chart.chart.TsDuoMultiChart
+            android:visibility="gone"
+            tools:visibility="visible"
+            android:id="@+id/tsMultiChart"
+            android:layout_width="match_parent"
+            android:layout_height="400dp" />
+
+        <TextView
+            android:textSize="10sp"
+            tools:text="2020-02-02 1000.00"
+            android:layout_marginTop="10dp"
+            android:layout_marginEnd="10dp"
+            android:layout_alignParentEnd="true"
+            android:id="@+id/tv_params5"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"/>
+
+    </RelativeLayout>
+
+</LinearLayout>

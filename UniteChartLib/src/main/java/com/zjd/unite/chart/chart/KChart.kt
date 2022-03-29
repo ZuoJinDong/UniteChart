@@ -3,22 +3,17 @@ package com.zjd.unite.chart.chart
 import android.annotation.SuppressLint
 import android.content.Context
 import android.graphics.*
-import android.text.Layout
-import android.text.StaticLayout
 import android.util.AttributeSet
 import android.view.MotionEvent
 import com.blankj.utilcode.util.ThreadUtils
 import com.zjd.unite.chart.R
-import com.zjd.unite.chart.constant.Constant
 import com.zjd.unite.chart.constant.ChartConstant
 import com.zjd.unite.chart.entity.*
 import com.zjd.unite.chart.utils.*
 import java.util.*
-import kotlin.collections.LinkedHashSet
 import kotlin.math.abs
 import kotlin.math.max
 import kotlin.math.min
-import kotlin.math.roundToInt
 
 /**
  * @author ZJD
@@ -31,10 +26,6 @@ const val MAIN_TYPE_BOLL = "BOLL"
 const val MAIN_TYPE_MABOLL = "MABOLL"
 const val MAIN_TYPE_SAR = "SAR"
 const val MAIN_TYPE_EXPMA = "EXPMA"
-/** 趋势先锋 */
-const val MAIN_TYPE_QSXF = "趋势先锋"
-/** 集金策略 */
-const val MAIN_TYPE_JJCL = "集金策略"
 
 class KChart @JvmOverloads constructor(mContext: Context, attrs: AttributeSet? = null, defStyleAttr: Int = 0)
     : GoldenCutChart<KLineData>(mContext, attrs, defStyleAttr) {
@@ -45,14 +36,12 @@ class KChart @JvmOverloads constructor(mContext: Context, attrs: AttributeSet? =
     private var sourceVisible = mutableListOf<KLineData>()
 
     /** 指标 */
-    private val typeList = listOf(
+    val typeList = listOf(
             MAIN_TYPE_MA,
             MAIN_TYPE_BOLL,
             MAIN_TYPE_MABOLL,
             MAIN_TYPE_SAR,
-            MAIN_TYPE_EXPMA,
-            MAIN_TYPE_QSXF,
-            MAIN_TYPE_JJCL)
+            MAIN_TYPE_EXPMA)
 
     /** 主图指标 */
     var mainType = MAIN_TYPE_MA
@@ -82,8 +71,8 @@ class KChart @JvmOverloads constructor(mContext: Context, attrs: AttributeSet? =
         emptyOffsetFlag = 1
     }
 
-    fun setQuoteBean(quoteBean: QuoteBean){
-        mDec = quoteBean.decPointCount
+    fun setDec(dec: Int){
+        mDec = dec
     }
 
     /**
@@ -505,118 +494,6 @@ class KChart @JvmOverloads constructor(mContext: Context, attrs: AttributeSet? =
             }
             MAIN_TYPE_SAR -> drawMainSAR(canvas)
             MAIN_TYPE_EXPMA -> drawMainEXPMA(canvas)
-            MAIN_TYPE_QSXF -> drawMainQSXFAndJJCL(canvas, turtlesSet)
-            MAIN_TYPE_JJCL -> drawMainQSXFAndJJCL(canvas, jjxSet)
-        }
-    }
-
-    /** 趋势先锋、集金策略 箭头高度 */
-    private val arrowHeight = dp2px(10f)
-
-    /**
-     * 主图指标趋势先锋
-     */
-    private fun drawMainQSXFAndJJCL(canvas: Canvas, dataSet: LinkedHashSet<QuoteSignEntry>) {
-        var textSize = getDataStepSize()
-
-        sp2px(9f).run {
-            if(textSize < this)
-                textSize = this
-        }
-
-        textSizeDef.run {
-            if(textSize > this)
-                textSize = this
-        }
-
-        linePaint.style = Paint.Style.FILL
-        textPaint.textSize = textSize
-
-        listVisible.forEach { kLine ->
-            dataSet.firstOrNull{ it.time == kLine.time }?.value?.single?.let { single ->
-                single.forEachIndexed { index, data ->
-                    data.getTypeStr()?.let { text ->
-                        if(index == 0){
-                            drawMainQSXFAndJJCL(canvas, data.isUp(), text, kLine.chartX, kLine.high, kLine.low)
-                        }else{
-                            drawMainQSXFAndJJCL(canvas, !single.first().isUp(), text, kLine.chartX, kLine.high, kLine.low, data.isUp())
-                        }
-                    }
-                }
-            }
-        }
-    }
-
-    private fun drawMainQSXFAndJJCL(canvas: Canvas, isUp: Boolean, text: String, chartX: Float, high: Double, low: Double, red: Boolean = isUp) {
-
-        Rect().apply {
-            textPaint.getTextBounds(text, 0, text.length, this)
-            linePaint.style = Paint.Style.FILL
-
-            if(red){
-                linePaint.color = colorRed
-                textPaint.color = colorRed
-            }else{
-                linePaint.color = colorGreen
-                textPaint.color = colorGreen
-            }
-
-            linePaint.alpha = 50
-
-            if(isUp){
-                val y = getValueY(low) + arrowHeight/10
-
-                Path().apply {
-                    (arrowHeight/6).let { offset ->
-                        moveTo(chartX, y)
-                        lineTo(chartX - offset, y + offset)
-                        lineTo(chartX + offset, y + offset)
-                        close()
-                    }
-                    canvas.drawPath(this, linePaint)
-                }
-                (y + arrowHeight).let {
-                    canvas.drawLine(chartX, y, chartX, it, linePaint)
-                    val outRectF = RectF(
-                        chartX - width()/2f - height()/2.5f,
-                        it,
-                        chartX + width() / 2f + height()/2,
-                        it + height()*4/3.2f)
-                    val radius = outRectF.height()/2
-                    canvas.drawRoundRect(outRectF, radius, radius, linePaint)
-                    linePaint.style = Paint.Style.STROKE
-                    linePaint.alpha = 255
-                    canvas.drawRoundRect(outRectF, radius, radius, linePaint)
-                    canvas.drawText(text, chartX - width()/2f, it + height(), textPaint)
-                }
-
-            }else{
-                val y = getValueY(high) - arrowHeight/10
-
-                Path().apply {
-                    (arrowHeight/6).let { offset ->
-                        moveTo(chartX, y)
-                        lineTo(chartX - offset, y - offset)
-                        lineTo(chartX + offset, y - offset)
-                        close()
-                    }
-                    canvas.drawPath(this, linePaint)
-                }
-                (y - arrowHeight).let {
-                    canvas.drawLine(chartX, y, chartX, it, linePaint)
-                    val outRectF = RectF(
-                        chartX - width()/2f - height()/2.5f,
-                        it - height()*4/3,
-                        chartX + width()/2f + height()/2,
-                        it)
-                    val radius = outRectF.height()/2
-                    canvas.drawRoundRect(outRectF, radius, radius, linePaint)
-                    linePaint.style = Paint.Style.STROKE
-                    linePaint.alpha = 255
-                    canvas.drawRoundRect(outRectF, radius, radius, linePaint)
-                    canvas.drawText(text, chartX - width()/2f, it - height()/3, textPaint)
-                }
-            }
         }
     }
 

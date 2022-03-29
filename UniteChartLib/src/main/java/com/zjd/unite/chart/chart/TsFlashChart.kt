@@ -39,6 +39,10 @@ class TsFlashChart @JvmOverloads constructor(mContext: Context, attrs: Attribute
         mDec = quoteBean.decPointCount
     }
 
+    fun setDec(dec: Int){
+        mDec = dec
+    }
+
     /**
      * 是否加载过
      */

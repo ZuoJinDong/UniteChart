@@ -36,18 +36,18 @@ class KAssistChart @JvmOverloads constructor(mContext: Context, attrs: Attribute
 
     /** 指标 */
     val typeList = listOf(
-            K_ASSIST_TYPE_MACD,
-            K_ASSIST_TYPE_RSI,
-            K_ASSIST_TYPE_KDJ,
-            K_ASSIST_TYPE_WR,
-            K_ASSIST_TYPE_VOL,
-            K_ASSIST_TYPE_CCI,
-            K_ASSIST_TYPE_CR,
-            K_ASSIST_TYPE_DMI,
-            K_ASSIST_TYPE_OBV,
-            K_ASSIST_TYPE_TRIX,
-            K_ASSIST_TYPE_PSY,
-            K_ASSIST_TYPE_BIAS)
+        K_ASSIST_TYPE_MACD,
+        K_ASSIST_TYPE_RSI,
+        K_ASSIST_TYPE_KDJ,
+        K_ASSIST_TYPE_WR,
+        K_ASSIST_TYPE_VOL,
+        K_ASSIST_TYPE_CCI,
+        K_ASSIST_TYPE_CR,
+        K_ASSIST_TYPE_DMI,
+        K_ASSIST_TYPE_OBV,
+        K_ASSIST_TYPE_TRIX,
+        K_ASSIST_TYPE_PSY,
+        K_ASSIST_TYPE_BIAS)
 
     /** 主图指标 */
     var assistType = K_ASSIST_TYPE_MACD

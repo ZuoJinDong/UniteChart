@@ -1,0 +1,430 @@
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:orientation="vertical"
+    android:clipToPadding="false"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:ignore="SmallSp">
+
+    <LinearLayout
+        android:minHeight="20dp"
+        android:id="@+id/ll_chart_info"
+        android:orientation="horizontal"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <LinearLayout
+            android:paddingEnd="6dp"
+            android:layout_gravity="center_vertical"
+            android:id="@+id/ll_switch"
+            android:background="@color/uc_candle_gray"
+            android:layout_marginEnd="5dp"
+            android:layout_marginStart="3.5dp"
+            android:layout_marginTop="2.5dp"
+            android:layout_marginBottom="2.5dp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content">
+
+            <TextView
+                android:layout_marginStart="6dp"
+                android:layout_gravity="center_vertical"
+                tools:text="MACD"
+                android:id="@+id/tv_switch"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:singleLine="true"
+                android:textColor="@color/uc_text_dark"
+                android:textSize="10sp" />
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:orientation="vertical"
+            android:layout_gravity="center_vertical"
+            android:id="@+id/ll_title"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <LinearLayout
+                android:id="@+id/ll_ma"
+                android:weightSum="5"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical"
+                android:orientation="horizontal"
+                android:visibility="visible"
+                tools:visibility="visible">
+
+                <!-- MA1 -->
+                <androidx.appcompat.widget.AppCompatTextView
+                    android:gravity="bottom"
+                    app:autoSizeMinTextSize="6sp"
+                    app:autoSizeMaxTextSize="10sp"
+                    app:autoSizeStepGranularity="0.5sp"
+                    app:autoSizeTextType="uniform"
+                    android:id="@+id/tv_price_ma1"
+                    android:layout_weight="1"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:textColor="#4796FF"
+                    android:maxLines="1"
+                    android:ellipsize="end"
+                    android:textSize="10sp"
+                    android:textStyle="bold"
+                    tools:text="12435.33"/>
+                <!-- MA2 -->
+                <androidx.appcompat.widget.AppCompatTextView
+                    android:gravity="bottom"
+                    app:autoSizeMinTextSize="6sp"
+                    app:autoSizeMaxTextSize="10sp"
+                    app:autoSizeStepGranularity="0.5sp"
+                    app:autoSizeTextType="uniform"
+                    android:id="@+id/tv_price_ma2"
+                    android:layout_weight="1"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:maxLines="1"
+                    tools:text="12435.33"
+                    android:ellipsize="end"
+                    android:textColor="#FF4747"
+                    android:textSize="10sp"
+                    android:textStyle="bold" />
+                <!-- MA3 -->
+                <androidx.appcompat.widget.AppCompatTextView
+                    android:gravity="bottom"
+                    app:autoSizeMinTextSize="6sp"
+                    app:autoSizeMaxTextSize="10sp"
+                    app:autoSizeStepGranularity="0.5sp"
+                    app:autoSizeTextType="uniform"
+                    tools:text="12435.33"
+                    android:id="@+id/tv_price_ma3"
+                    android:layout_weight="1"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:maxLines="1"
+                    android:ellipsize="end"
+                    android:textColor="#FF911A"
+                    android:textSize="10sp"
+                    android:textStyle="bold"  />
+                <!-- MA4 -->
+                <androidx.appcompat.widget.AppCompatTextView
+                    android:gravity="bottom"
+                    app:autoSizeMinTextSize="6sp"
+                    app:autoSizeMaxTextSize="10sp"
+                    app:autoSizeStepGranularity="0.5sp"
+                    app:autoSizeTextType="uniform"
+                    tools:text="12435.33"
+                    android:id="@+id/tv_price_ma4"
+                    android:layout_weight="1"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:maxLines="1"
+                    android:ellipsize="end"
+                    android:textColor="#0042FF"
+                    android:textSize="10sp"
+                    android:textStyle="bold" />
+                <!-- MA5 -->
+                <androidx.appcompat.widget.AppCompatTextView
+                    android:gravity="bottom"
+                    app:autoSizeMinTextSize="6sp"
+                    app:autoSizeMaxTextSize="10sp"
+                    app:autoSizeStepGranularity="0.5sp"
+                    app:autoSizeTextType="uniform"
+                    tools:text="12435.33"
+                    android:id="@+id/tv_price_ma5"
+                    android:layout_weight="1"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:maxLines="1"
+                    android:ellipsize="end"
+                    android:textColor="#00EDBE"
+                    android:textSize="10sp"
+                    android:textStyle="bold" />
+
+            </LinearLayout>
+
+            <androidx.appcompat.widget.AppCompatTextView
+                android:lines="1"
+                android:id="@+id/tv_params"
+                android:textColor="@color/uc_text_dark"
+                android:textSize="10sp"
+                tools:text="(0,0): MID:0  UPPER:0  LOWER:0"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"/>
+
+        </LinearLayout>
+
+    </LinearLayout>
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="250dp">
+
+        <com.zjd.unite.chart.chart.KChart
+            android:id="@+id/kChart"
+            android:layout_width="match_parent"
+            android:layout_height="250dp"/>
+
+    </RelativeLayout>
+
+    <LinearLayout
+        android:id="@+id/ll_assist1"
+        android:orientation="vertical"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <LinearLayout
+            android:layout_gravity="center_vertical"
+            android:id="@+id/ll_assist_info1"
+            android:orientation="horizontal"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <LinearLayout
+                android:layout_gravity="center_vertical"
+                android:paddingEnd="6dp"
+                android:id="@+id/ll_switch1"
+                android:background="@color/uc_candle_gray"
+                android:layout_marginStart="3.5dp"
+                android:layout_marginTop="2.5dp"
+                android:layout_marginBottom="2.5dp"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content">
+
+                <TextView
+                    android:layout_marginStart="6dp"
+                    android:layout_gravity="center_vertical"
+                    tools:text="MACD"
+                    android:id="@+id/tv_switch1"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:singleLine="true"
+                    android:textColor="@color/uc_text_dark"
+                    android:textSize="10sp" />
+
+            </LinearLayout>
+
+            <androidx.appcompat.widget.AppCompatTextView
+                android:layout_gravity="center_vertical"
+                android:layout_marginStart="5dp"
+                app:autoSizeMinTextSize="6sp"
+                app:autoSizeMaxTextSize="10sp"
+                app:autoSizeStepGranularity="0.5sp"
+                app:autoSizeTextType="uniform"
+                android:gravity="center_vertical"
+                android:lines="1"
+                android:id="@+id/tv_params1"
+                android:textColor="@color/uc_text_dark"
+                android:textSize="10sp"
+                tools:text="(0,0): MID:0  UPPER:0  LOWER:0"
+                android:layout_width="match_parent"
+                android:layout_height="20dp"
+                tools:ignore="SmallSp" />
+
+        </LinearLayout>
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="100dp">
+
+            <com.zjd.unite.chart.chart.KAssistChart
+                android:id="@+id/kAssistChart1"
+                android:layout_width="match_parent"
+                android:layout_height="100dp"/>
+
+        </RelativeLayout>
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/ll_assist2"
+        android:orientation="vertical"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <LinearLayout
+            android:layout_gravity="center_vertical"
+            android:id="@+id/ll_assist_info2"
+            android:orientation="horizontal"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <LinearLayout
+                android:layout_gravity="center_vertical"
+                android:paddingEnd="6dp"
+                android:id="@+id/ll_switch2"
+                android:background="@color/uc_candle_gray"
+                android:layout_marginStart="3.5dp"
+                android:layout_marginTop="2.5dp"
+                android:layout_marginBottom="2.5dp"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content">
+
+                <TextView
+                    android:layout_marginStart="6dp"
+                    android:layout_gravity="center_vertical"
+                    tools:text="MACD"
+                    android:id="@+id/tv_switch2"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:singleLine="true"
+                    android:textColor="@color/uc_text_dark"
+                    android:textSize="10sp" />
+
+            </LinearLayout>
+
+            <androidx.appcompat.widget.AppCompatTextView
+                android:layout_gravity="center_vertical"
+                android:layout_marginStart="5dp"
+                app:autoSizeMinTextSize="6sp"
+                app:autoSizeMaxTextSize="10sp"
+                app:autoSizeStepGranularity="0.5sp"
+                app:autoSizeTextType="uniform"
+                android:gravity="center_vertical"
+                android:lines="1"
+                android:id="@+id/tv_params2"
+                android:textColor="@color/uc_text_dark"
+                android:textSize="10sp"
+                tools:text="(0,0): MID:0  UPPER:0  LOWER:0"
+                android:layout_width="match_parent"
+                android:layout_height="20dp"
+                tools:ignore="SmallSp" />
+
+        </LinearLayout>
+
+        <com.zjd.unite.chart.chart.KAssistChart
+            android:id="@+id/kAssistChart2"
+            android:layout_width="match_parent"
+            android:layout_height="100dp"/>
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/ll_assist3"
+        android:orientation="vertical"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <LinearLayout
+            android:layout_gravity="center_vertical"
+            android:id="@+id/ll_assist_info3"
+            android:orientation="horizontal"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <LinearLayout
+                android:layout_gravity="center_vertical"
+                android:paddingEnd="6dp"
+                android:id="@+id/ll_switch3"
+                android:background="@color/uc_candle_gray"
+                android:layout_marginStart="3.5dp"
+                android:layout_marginTop="2.5dp"
+                android:layout_marginBottom="2.5dp"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content">
+
+                <TextView
+                    android:layout_marginStart="6dp"
+                    android:layout_gravity="center_vertical"
+                    tools:text="MACD"
+                    android:id="@+id/tv_switch3"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:singleLine="true"
+                    android:textColor="@color/uc_text_dark"
+                    android:textSize="10sp" />
+
+            </LinearLayout>
+
+            <androidx.appcompat.widget.AppCompatTextView
+                android:layout_gravity="center_vertical"
+                android:layout_marginStart="5dp"
+                app:autoSizeMinTextSize="6sp"
+                app:autoSizeMaxTextSize="10sp"
+                app:autoSizeStepGranularity="0.5sp"
+                app:autoSizeTextType="uniform"
+                android:gravity="center_vertical"
+                android:lines="1"
+                android:id="@+id/tv_params3"
+                android:textColor="@color/uc_text_dark"
+                android:textSize="10sp"
+                tools:text="(0,0): MID:0  UPPER:0  LOWER:0"
+                android:layout_width="match_parent"
+                android:layout_height="20dp"
+                tools:ignore="SmallSp" />
+
+        </LinearLayout>
+
+        <com.zjd.unite.chart.chart.KAssistChart
+            android:id="@+id/kAssistChart3"
+            android:layout_width="match_parent"
+            android:layout_height="100dp"/>
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/ll_assist4"
+        android:orientation="vertical"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <LinearLayout
+            android:layout_gravity="center_vertical"
+            android:id="@+id/ll_assist_info4"
+            android:orientation="horizontal"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <LinearLayout
+                android:layout_gravity="center_vertical"
+                android:paddingEnd="6dp"
+                android:id="@+id/ll_switch4"
+                android:background="@color/uc_candle_gray"
+                android:layout_marginStart="3.5dp"
+                android:layout_marginTop="2.5dp"
+                android:layout_marginBottom="2.5dp"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content">
+
+                <TextView
+                    android:layout_marginStart="6dp"
+                    android:layout_gravity="center_vertical"
+                    tools:text="MACD"
+                    android:id="@+id/tv_switch4"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:singleLine="true"
+                    android:textColor="@color/uc_text_dark"
+                    android:textSize="10sp" />
+
+            </LinearLayout>
+
+            <androidx.appcompat.widget.AppCompatTextView
+                android:layout_gravity="center_vertical"
+                android:layout_marginStart="5dp"
+                app:autoSizeMinTextSize="6sp"
+                app:autoSizeMaxTextSize="10sp"
+                app:autoSizeStepGranularity="0.5sp"
+                app:autoSizeTextType="uniform"
+                android:gravity="center_vertical"
+                android:lines="1"
+                android:id="@+id/tv_params4"
+                android:textColor="@color/uc_text_dark"
+                android:textSize="10sp"
+                tools:text="(0,0): MID:0  UPPER:0  LOWER:0"
+                android:layout_width="match_parent"
+                android:layout_height="20dp"
+                tools:ignore="SmallSp" />
+
+        </LinearLayout>
+
+        <com.zjd.unite.chart.chart.KAssistChart
+            android:id="@+id/kAssistChart4"
+            android:layout_width="match_parent"
+            android:layout_height="100dp"/>
+
+    </LinearLayout>
+
+</LinearLayout>

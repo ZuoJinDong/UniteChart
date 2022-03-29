@@ -1,13 +1,15 @@
-package com.zjd.demo
+package com.zjd.demo.frag
 
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.viewbinding.ViewBinding
+import com.blankj.utilcode.util.TimeUtils
 import com.google.gson.Gson
 import com.google.gson.JsonObject
 import com.google.gson.reflect.TypeToken
+import com.zjd.demo.MainActivity
 import com.zjd.demo.databinding.FragmentChartTsBinding
 import com.zjd.demo.net.getGw
 import com.zjd.unite.chart.chart.*
@@ -63,9 +65,6 @@ class ChartTsFragment : BaseChartFragment<TsLineData>(), OnChartSingleClick {
      * 初始化副图
      */
     private fun initAssistChart() {
-        //添加多日不展示
-        assistIndex = "MACDFS"
-
         mBinding.llTsAssist.visibility = View.VISIBLE
         mBinding.tsAssistChart.visibility = View.VISIBLE
 
@@ -105,13 +104,26 @@ class ChartTsFragment : BaseChartFragment<TsLineData>(), OnChartSingleClick {
     }
 
     override fun onDataSelect(data: TsLineData, showCross: Boolean, crossX: Float) {
-        setParamsText(mBinding.tvParamsMain, data, MAIN_TYPE_TS, mBinding.tsChart.midValue, quoteBean.decPointCount)
-        setParamsText(mBinding.tvParamsAssist, data, mBinding.tsAssistChart.assistType, dec = quoteBean.decPointCount)
+        setParamsText(mBinding.tvParamsMain, data, MAIN_TYPE_TS, mBinding.tsChart.midValue, 2)
+        setParamsText(mBinding.tvParamsAssist, data, mBinding.tsAssistChart.assistType, dec = 2)
     }
 
     override fun updateQuote(quote: QuoteBean) {
         //更新图表数据
-        mBinding.tsChart.updateQuote(quote)
+        try{
+            mBinding.tsChart.listVisible.lastOrNull()?.let {
+                val testNew = QuoteBean().apply {
+                    recentTime = TimeUtils.string2Millis(TimeUtils.millis2String(System.currentTimeMillis(), "yyyy-MM-dd HH:mm"), "yyyy-MM-dd HH:mm")
+                    currentPrice =  (Math.random() * 0.002 + 0.999) * it.close
+                    holding = it.holding*0.1
+                    vol = 2
+                    contractSize = 1
+                }
+                mBinding.tsChart.updateQuote(testNew)
+            }
+        }catch (e: Exception){
+
+        }
     }
 
     override fun refreshData() {
@@ -150,7 +162,7 @@ class ChartTsFragment : BaseChartFragment<TsLineData>(), OnChartSingleClick {
     }
 
     private fun getTsAssistChartName(): List<String> {
-        return mutableListOf("成交量","MACDFS")
+        return mutableListOf("分时量","MACDFS")
     }
 
     override fun goldenCutEvent(status: Int) {
@@ -175,7 +187,7 @@ class ChartTsFragment : BaseChartFragment<TsLineData>(), OnChartSingleClick {
         return mBinding
     }
 
-    private fun queryTSLineHisData(id: Int, offset: Int = 0, contractSize: Int = 0, time: Long = 0) {
+    private fun queryTSLineHisData(id: Int, offset: Int = 0, contractSize: Int = 1, time: Long = 0) {
         val jsonObject = JsonObject()
         jsonObject.addProperty("symbol", id)
         jsonObject.addProperty("time", time)

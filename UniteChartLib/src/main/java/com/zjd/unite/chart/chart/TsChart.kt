@@ -581,41 +581,29 @@ open class TsChart @JvmOverloads constructor(context: Context, attrs: AttributeS
      * 更新推送数据
      */
     open fun updateQuote(quoteBean: QuoteBean?) {
-//        quoteBean?.let { quoteBean ->
-//            this.quoteBean = quoteBean
-//            if(quote == null){
-//                quote = QuoteManager.getQuoteById(quoteBean.id)
-//            }
-//
-//            if(timeAll.isNotEmpty() && quoteBean.recentTime !in timeAll.first()..timeAll.last()){
-//                timeAll.minByOrNull { abs(quoteBean.recentTime - it) }?.let {
-//                    quoteBean.recentTime = it
-//                }
-//            }
-//
-//            if(!isShowGoldenCut() && timeAll.contains(quoteBean.recentTime)){
-//                val lastData = listVisible.lastOrNull()
-//                when {
-//                    lastData == null -> listVisible.add(TsLineData(quoteBean))
-//                    lastData.time == quoteBean.recentTime -> lastData.apply {
-//                        close = quoteBean.currentPrice
-//
-//                        quote?.let { quote ->
-//                            if(quote.get(QuoteConstant.KEY_COLUMN_PRICE) != null
-//                                && DoubleUtil.obj2Double(quote.get(QuoteConstant.CONUMN_TYPE_VOL)) != 0.0
-//                                && DoubleUtil.obj2Double(quote.get(QuoteConstant.CONUMN_OPEN_CLOSE)) != 0.0){
-//                                holding += quoteBean.holding
-//                                volume += quoteBean.vol
-//                            }
-//                        }
-//                    }
-//                    else -> listVisible.add(TsLineData(quoteBean))
-//                }
-//                DataFormatHelper.calculateTs(listVisible, quoteBean.id, quoteBean.contractSize)
-//                formatMaxAndMin()
-//                postInvalidate()
-//            }
-//        }
+        quoteBean?.let { quoteBean ->
+            if(timeAll.isNotEmpty() && quoteBean.recentTime !in timeAll.first()..timeAll.last()){
+                timeAll.minByOrNull { abs(quoteBean.recentTime - it) }?.let {
+                    quoteBean.recentTime = it
+                }
+            }
+
+            if(!isShowGoldenCut() && timeAll.contains(quoteBean.recentTime)){
+                val lastData = listVisible.lastOrNull()
+                when {
+                    lastData == null -> listVisible.add(TsLineData(quoteBean))
+                    lastData.time == quoteBean.recentTime -> lastData.apply {
+                        close = quoteBean.currentPrice
+                        holding += quoteBean.holding
+                        volume += quoteBean.vol
+                    }
+                    else -> listVisible.add(TsLineData(quoteBean))
+                }
+                DataFormatHelper.calculateTs(listVisible, quoteBean.id, quoteBean.contractSize)
+                formatMaxAndMin()
+                postInvalidate()
+            }
+        }
     }
 
     override fun onLongPress(ev: MotionEvent) {

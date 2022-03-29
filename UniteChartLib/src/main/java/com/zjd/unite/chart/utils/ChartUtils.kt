@@ -104,13 +104,6 @@ fun setParamsText(tv: TextView, data: KLineData, chartType: String){
                 formatSpan(tv.context, paramBuilder, " N2(${ChartParams.PARAM_MAIN_EXPMA[1]}): ", n2, R.color.expma_n2)
             }
         }
-        MAIN_TYPE_QSXF -> {
-            paramBuilder.append("")
-        }
-        MAIN_TYPE_JJCL -> {
-            paramBuilder.append("")
-        }
-
         K_ASSIST_TYPE_VOL -> {
             paramBuilder.append("量: ")
             paramBuilder.append(formatDouble(data.volume, 0))
@@ -130,8 +123,6 @@ fun setParamsText(tv: TextView, data: KLineData, chartType: String){
                 formatSpan(tv.context, paramBuilder, " RSI${it[2]}: ", rsi3, R.color.rsi3)
             }
         }
-
-
         K_ASSIST_TYPE_KDJ -> {
             paramBuilder.append("(${ChartParams.PARAM_ASSIST_KDJ[0]},${ChartParams.PARAM_ASSIST_KDJ[1]},${ChartParams.PARAM_ASSIST_KDJ[2]}):")
             data.kdj.run {

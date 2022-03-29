@@ -169,7 +169,7 @@ abstract class BaseChart<T : Any> @JvmOverloads constructor(val mContext: Contex
         setLayerType(LAYER_TYPE_SOFTWARE, null)
         gestureDetector = GestureDetector(mContext, this)
         //设置背景
-//        setBackgroundColor(getColor(context, R.color.chart_bg))
+        setBackgroundColor(Color.WHITE)
     }
 
     /**
