@@ -11,7 +11,9 @@ import android.view.ViewGroup
 import androidx.viewbinding.ViewBinding
 import com.alibaba.fastjson.JSON
 import com.blankj.utilcode.util.TimeUtils
+import com.google.gson.Gson
 import com.google.gson.JsonObject
+import com.google.gson.reflect.TypeToken
 import com.zjd.demo.MainActivity
 import com.zjd.demo.databinding.FragmentChartTsDuoBinding
 import com.zjd.demo.net.getGw
@@ -20,6 +22,7 @@ import com.zjd.unite.chart.chart.MAIN_TYPE_TS
 import com.zjd.unite.chart.chart.OnChartSingleClick
 import com.zjd.unite.chart.chart.TsDuoMultiChart
 import com.zjd.unite.chart.constant.ChartConstant
+import com.zjd.unite.chart.entity.KHisData
 import com.zjd.unite.chart.entity.QuoteBean
 import com.zjd.unite.chart.entity.TsHisBean
 import com.zjd.unite.chart.entity.TsLineData
@@ -29,6 +32,7 @@ import com.zjd.unite.chart.utils.setParamsText
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
 import io.reactivex.rxjava3.schedulers.Schedulers
 import java.lang.Exception
+import java.lang.reflect.Type
 
 /**
  * @author ZJD
@@ -197,7 +201,7 @@ class ChartTsDuoFragment : BaseChartFragment<TsLineData>(), OnChartSingleClick, 
             .observeOn(AndroidSchedulers.mainThread())
             .subscribe({ result ->
                 val jsonArray = (result as JsonObject)["data"].asJsonObject["items"].asJsonArray
-                val list: MutableList<TsHisBean> = JSON.parseArray(jsonArray.toString(), TsHisBean::class.java)
+                val list: MutableList<TsHisBean> = Gson().fromJson(jsonArray.toString(), object : TypeToken<MutableList<TsHisBean>>() {}.type)
                 val allTsLine = DataRequest.getALLTsLine(list, id, contractSize)
                 getSuccess(allTsLine)
             }) { throwable: Throwable ->

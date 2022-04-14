@@ -10,6 +10,7 @@ import android.widget.TextView
 import androidx.viewbinding.ViewBinding
 import com.alibaba.fastjson.JSON
 import com.blankj.utilcode.util.TimeUtils
+import com.google.gson.Gson
 import com.google.gson.JsonObject
 import com.zjd.demo.MainActivity
 import com.zjd.demo.databinding.FragmentChartKBinding
@@ -418,7 +419,7 @@ class ChartKFragment : BaseChartFragment<KLineData>(),
             .observeOn(Schedulers.io())
             .subscribe({ result ->
                 val data = (result as JsonObject)["data"].asJsonObject
-                val newKHis = JSON.parseObject(data.toString(), KHisData::class.java)
+                val newKHis = Gson().fromJson(data.toString(), KHisData::class.java)
                 getSuccess(newKHis)
             }) { throwable: Throwable ->
                 throwable.printStackTrace()
