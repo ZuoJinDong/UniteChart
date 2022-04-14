@@ -119,7 +119,7 @@ abstract class BaseChart<T : Any> @JvmOverloads constructor(val mContext: Contex
     protected var visibleCount = 100
     /** 可见最后一个数据 */
     protected var visibleLastIndex = 99
-    //蜡烛棒 宽度
+    /** 蜡烛棒 宽度 */
     protected var candleWidth = 0f
 
     /** 全部数据 */
