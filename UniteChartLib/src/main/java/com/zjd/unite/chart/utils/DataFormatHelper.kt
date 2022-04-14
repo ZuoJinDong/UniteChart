@@ -104,15 +104,6 @@ object DataFormatHelper {
         Log.d("calculate=====EXPMA=", "${System.currentTimeMillis() - start}")
 
         start = System.currentTimeMillis()
-        calculateQSXF(dataList)
-        Log.d("calculate=====QSXF=", "${System.currentTimeMillis() - start}")
-
-        start = System.currentTimeMillis()
-        calculateJJCL(dataList)
-        Log.d("calculate=====JJCL=", "${System.currentTimeMillis() - start}")
-
-
-        start = System.currentTimeMillis()
         calculateMACD(dataList)
         Log.d("calculate=====MACD=", "${System.currentTimeMillis() - start}")
 
@@ -819,30 +810,6 @@ object DataFormatHelper {
         }
     }
 
-    private fun calculateJJCL(dataList: List<KLineData>) {
-        dataList.forEachIndexed { index, kLine ->
-            kLine.jjcl.apply {
-                if(index%4 == 0){
-                    type = 0
-                }else if(index%4 == 2){
-                    type = 1
-                }
-            }
-        }
-    }
-
-    private fun calculateQSXF(dataList: List<KLineData>) {
-        dataList.forEachIndexed { index, kLine ->
-            kLine.qsxf.apply {
-                if(index%4 == 1){
-                    type = 0
-                }else if(index%4 == 3){
-                    type = 1
-                }
-            }
-        }
-    }
-
     private fun calculateEXPMA(dataList: List<KLineData>) {
         ChartParams.PARAM_MAIN_EXPMA.forEachIndexed { index, offset ->
             //前一天的EXPMA
@@ -1053,39 +1020,6 @@ object DataFormatHelper {
             }
         }
         return maxVolume
-    }
-
-    /**
-     * 盯盘神器List根据周期转化为Map
-     */
-    fun trendListToMap(period: String, list: List<QuoteSymbolTrendBean>): MutableMap<Long, MutableList<QuoteSymbolTrendBean>>{
-        val map = mutableMapOf<Long, MutableList<QuoteSymbolTrendBean>>()
-
-        val time: Long =  when (period) {
-            "m1" -> 60000
-            "m5" -> 5*60000
-            "m15" -> 15*60000
-            "m30" -> 30*60000
-            "hr" -> 60*60000
-            "day" -> 24*60*60000
-            else -> return map
-        }
-
-        list.forEach { trend ->
-            //转化为周期时间
-            val time = if(period == "day"){
-                formatTimeUnit(trend.eventTime, ChartConstant.PERIOD_DAY)
-            }else{
-                (trend.eventTime/time)*time
-            }
-
-            if(map[time] == null){
-                map[time] = mutableListOf()
-            }
-            map[time]?.add(trend)
-        }
-
-        return map
     }
 
     fun formatTimeUnit(time: Long, unit: Int): Long{

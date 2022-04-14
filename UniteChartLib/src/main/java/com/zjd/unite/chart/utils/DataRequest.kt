@@ -106,52 +106,10 @@ object DataRequest {
         }
     }
 
-    /**
-     * 获取盯盘神器
-     */
-    fun getTrendList(): List<QuoteSymbolTrendBean>? {
-        return try {
-            Gson().fromJson<List<QuoteSymbolTrendBean>>(
-                    readFile(trendPath),
-                    object : TypeToken<List<QuoteSymbolTrendBean>>() {}.type)
-        } catch (e: Exception) {
-            e.printStackTrace()
-            null
-        }
-    }
-
-    /**
-     * 获取交易轨迹
-     */
-    fun getTradeTrace(): TradeOrdersTraceBean? {
-        return try {
-            Gson().fromJson<TradeOrdersTraceBean>(
-                    readFile(tracePath),
-                    object : TypeToken<TradeOrdersTraceBean>() {}.type)
-        } catch (e: Exception) {
-            e.printStackTrace()
-            null
-        }
-    }
-
-    /**
-     * 获取财经日历
-     */
-    fun getCalendarList(): List<CalendarBean> {
-        return try {
-            Gson().fromJson(readFile(calendarPath),
-                    object : TypeToken<List<CalendarBean>>() {}.type)
-        } catch (e: Exception) {
-            e.printStackTrace()
-            listOf()
-        }
-    }
-
     interface OnRequestResult<T>{
         fun onSuccess(result: T)
         fun onError()
     }
-
 }
 
 

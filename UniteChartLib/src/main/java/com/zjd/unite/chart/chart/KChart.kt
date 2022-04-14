@@ -61,11 +61,6 @@ class KChart @JvmOverloads constructor(mContext: Context, attrs: AttributeSet? =
     /** 滚动至数据尽头 */
     var onScrollEndListener: OnScrollEndListener? = null
 
-    /** 集金策略 */
-    private var jjxSet = linkedSetOf<QuoteSignEntry>()
-    /** 趋势先锋 */
-    private var turtlesSet = linkedSetOf<QuoteSignEntry>()
-
     init {
         visibleCount = 40
         emptyOffsetFlag = 1
@@ -81,74 +76,6 @@ class KChart @JvmOverloads constructor(mContext: Context, attrs: AttributeSet? =
     fun bindAssist(assistChart: KAssistChart){
         assistChart.bindMainChart(this)
         assistChartList.add(assistChart)
-    }
-
-    /** 设置趋势先锋 */
-    fun addJjxSet(set: Set<QuoteSignEntry>){
-        jjxSet.addAll(set)
-        jjxSet.sortedBy { it.time }
-    }
-
-    /** 设置集金策略 */
-    fun addTurtlesSet(set: Set<QuoteSignEntry>){
-        turtlesSet.addAll(set)
-        turtlesSet.sortedBy { it.time }
-    }
-
-    /**
-     * 格式化轨迹时间
-     * @param list 轨迹
-     * @param isOpen 是否开仓
-     */
-    private fun formatTraceMap(list: List<TradeTraceBean>, isOpen: Boolean): LinkedHashMap<Long, MutableList<TradeTraceBean>> {
-        val traceMap = LinkedHashMap<Long, MutableList<TradeTraceBean>>()
-        for (i in list.indices) {
-            val traceBean = list[i]
-            var formatTime: Long = 0
-            if (isOpen) {
-                if (traceBean.openTime != 0L) {
-                    formatTime = getTraceMapTime(traceBean.openTime)
-                }
-            } else {
-                if (traceBean.closeTime != 0L) {
-                    formatTime = getTraceMapTime(traceBean.closeTime)
-                }
-            }
-            if (formatTime != 0L) {
-                if (traceMap.containsKey(formatTime)) {
-                    traceMap[formatTime]!!.add(traceBean)
-                } else {
-                    val traceBeans: MutableList<TradeTraceBean> = ArrayList()
-                    traceBeans.add(traceBean)
-                    traceMap[formatTime] = traceBeans
-                }
-            }
-        }
-        return traceMap
-    }
-
-    private fun getTraceMapTime(traceTime: Long): Long {
-        val calendar = Calendar.getInstance()
-        calendar.timeInMillis = traceTime
-        calendar[Calendar.MILLISECOND] = 0
-        calendar[Calendar.SECOND] = 0
-        val minute = calendar[Calendar.MINUTE]
-        when (periodTag) {
-            ChartConstant.PERIOD_1_MINUTE -> return calendar.timeInMillis
-            ChartConstant.PERIOD_3_MINUTE -> calendar[Calendar.MINUTE] = minute / 3 * 3
-            ChartConstant.PERIOD_5_MINUTE -> calendar[Calendar.MINUTE] = minute / 5 * 5
-            ChartConstant.PERIOD_10_MINUTE -> calendar[Calendar.MINUTE] = minute / 10 * 10
-            ChartConstant.PERIOD_15_MINUTE -> calendar[Calendar.MINUTE] = minute / 15 * 15
-            ChartConstant.PERIOD_20_MINUTE -> calendar[Calendar.MINUTE] = minute / 20 * 20
-            ChartConstant.PERIOD_30_MINUTE -> calendar[Calendar.MINUTE] = minute / 30 * 30
-            ChartConstant.PERIOD_60_MINUTE -> calendar[Calendar.MINUTE] = 0
-            ChartConstant.PERIOD_DAY -> {
-                calendar[Calendar.MINUTE] = 0
-                calendar[Calendar.HOUR_OF_DAY] = 0
-            }
-            else -> return 0
-        }
-        return calendar.timeInMillis
     }
 
     private var dataInited = false
