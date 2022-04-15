@@ -1,22 +1,13 @@
 package com.zjd.unite.chart.utils;
 
-import android.content.Context;
 import android.util.Log;
-import com.blankj.utilcode.util.LogUtils;
 import com.blankj.utilcode.util.TimeUtils;
-import com.zjd.unite.chart.R;
 import com.zjd.unite.chart.constant.QuoteConstant;
-import com.zjd.unite.chart.entity.FlashHisBean;
-import com.zjd.unite.chart.entity.KHisData;
 import com.zjd.unite.chart.entity.KLineData;
-import com.zjd.unite.chart.entity.QuoteBean;
 import com.zjd.unite.chart.entity.TradeTimeBean;
-import com.zjd.unite.chart.entity.TsHisBean;
-import com.zjd.unite.chart.entity.TsLineData;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
-import java.util.Map;
 
 public class QuoteUtils {
 
