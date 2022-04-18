@@ -150,6 +150,7 @@ abstract class BaseChart<T : Any> @JvmOverloads constructor(val mContext: Contex
             }
             changeLastVisible()
         }
+        //使用减速插值器
         interpolator = DecelerateInterpolator()
     }
 
@@ -200,7 +201,9 @@ abstract class BaseChart<T : Any> @JvmOverloads constructor(val mContext: Contex
     }
 
     /**
-     * 计算右侧值
+     * 计算右侧指标数值
+     * @param gapSize 区间数
+     * 子类赋值 topValue bottomValue 当可见数据发生改变时计算该数值
      */
     open fun formatRightValue(gapSize: Int = 4) {
         textPaint.textSize = textSizeDef
@@ -219,7 +222,9 @@ abstract class BaseChart<T : Any> @JvmOverloads constructor(val mContext: Contex
     }
 
     /**
-     * 计算左侧值
+     * 计算左侧指标数值
+     * @param gapSize 区间数
+     * 子类赋值 topValue bottomValue 当可见数据发生改变时计算该数值
      */
     open fun formatLeftValue(gapSize: Int = 4) {
         if(chartWidth == 0f){
@@ -243,7 +248,7 @@ abstract class BaseChart<T : Any> @JvmOverloads constructor(val mContext: Contex
 
             valueStr.let {
                 textPaint.getTextBounds(it, 0, it.length, leftBound)
-                yLeftValue.add(ChartXYValue(it, chartWidth, index * yGapSize, leftBound))
+                yLeftValue.add(ChartXYValue(it, 0f, index * yGapSize, leftBound))
             }
         }
     }
@@ -273,26 +278,37 @@ abstract class BaseChart<T : Any> @JvmOverloads constructor(val mContext: Contex
         super.onDraw(canvas)
         try {
             if(canvasBitmap != null){
+                //截图不为空时直接绘制截图，不再进行数据的重新计算
                 canvas.drawBitmap(canvasBitmap!!, 0f, 0f, linePaint)
                 canvas.translate(marginLeft, marginTop)
                 if(showCross){
+                    //绘制十字光标
                     drawCross(canvas)
                 }
+                //绘制选十字光标所在数据
                 drawStaticData(canvas)
             }else{
+                //画布剪裁与位置平移
                 canvas.save()
                 clipPath(canvas)
                 canvas.translate(marginLeft, marginTop)
+                //图表边框
                 drawOutline(canvas)
+                //中部虚线
                 drawDashLineY(canvas)
+                //图表数据（子类中绘制）
                 drawData(canvas)
+                //左右数值
                 drawYLeftValue(canvas)
                 drawYRightValue(canvas)
+                //最顶层数据
                 drawTopView(canvas)
                 canvas.restore()
                 canvas.translate(marginLeft, marginTop)
+                //横坐标数值
                 drawXValue(canvas)
                 if(!showCross){
+                    //非十字光标时回调最后一条数据
                     listVisible.lastOrNull()?.let {
                         onDataSelectListener?.onDataSelect(it, showCross, crossX + marginLeft)
                     }
@@ -456,7 +472,7 @@ abstract class BaseChart<T : Any> @JvmOverloads constructor(val mContext: Contex
      */
     fun getDataStepSize(): Float = if(visibleCount == 0) chartWidth else chartWidth / visibleCount
 
-    /** 移动距离 */
+    /** 移动距离 用于计算滚动的数据个数 */
     protected var moveDistance = 0f
     /**
      * 移动方向
@@ -483,23 +499,28 @@ abstract class BaseChart<T : Any> @JvmOverloads constructor(val mContext: Contex
             }
             MotionEvent.ACTION_MOVE -> {
                 if (showCross) {
+                    //十字光标滑动
                     crossX = event.x - marginLeft
                     crossY = event.y
                     invalidate()
                 } else if (event.pointerCount >= 2 && canvasBitmap == null) {
                     requestParentDisallowInterceptTouchEvent(true)
                     if (downDistance == 0f) {
+                        //记录按下时双指距离
                         downDistance = abs(event.getX(0) - event.getX(1))
                     } else {
-                        //双指缩放
+                        //双指缩放距离
                         val scaleDistance = abs(event.getX(0) - event.getX(1))
+                        //根据两次距离差值计算缩放数据的个数
                         val temp: Int = ((downDistance - scaleDistance) / getDataStepSize() / 10).roundToInt()
+                        //计算可见个数
                         visibleCount += temp
                         if (visibleCount > visibleCountMax) {
                             visibleCount = visibleCountMax
                         } else if (visibleCount < visibleCountMin) {
                             visibleCount = visibleCountMin
                         }
+                        //重新计算可见数据
                         changeLastVisible(true)
                     }
                 }
@@ -531,6 +552,10 @@ abstract class BaseChart<T : Any> @JvmOverloads constructor(val mContext: Contex
 
     /**
      * 左右滑动改变数据
+     * 根据 moveDistance 与 DataStepSize 计算滚动的数据个数
+     * 重置可见数据 listVisible
+     * 重新计算最大最小值
+     * 重新绘制
      */
     open fun changeLastVisible(scaleMode: Boolean = false) {
         val offsetIndex :Int = try{
@@ -604,7 +629,7 @@ abstract class BaseChart<T : Any> @JvmOverloads constructor(val mContext: Contex
 
     override fun onScroll(e1: MotionEvent, e2: MotionEvent, velocityX: Float, velocityY: Float): Boolean {
         if(e2.pointerCount < 2 && !showCross && canvasBitmap == null){
-            //单指滑动
+            //单指滑动，累加moveDistance用于计算滚动的数据个数
             requestParentDisallowInterceptTouchEvent(true)
             downDistance = 0f
             moveDistance -= velocityX
@@ -645,6 +670,7 @@ abstract class BaseChart<T : Any> @JvmOverloads constructor(val mContext: Contex
     override fun onFling(e1: MotionEvent, e2: MotionEvent, velocityX: Float, velocityY: Float): Boolean {
         if(e1.pointerCount < 2 && !showCross && canvasBitmap == null){
             if(abs(velocityX) > 3000f){
+                //单次滑动距离超过3000时启动滑动动画
                 flingAnim.setFloatValues(flingSpeed(velocityX), 0f)
                 flingAnim.start()
             }

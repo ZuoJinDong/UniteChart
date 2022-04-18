@@ -382,7 +382,6 @@ class TsDuoMultiChart @JvmOverloads constructor(context: Context, attrs: Attribu
                         var chartX: Float = 0f, //横坐标
                         var max: Double = Double.MIN_VALUE, //每日最大值
                         var min: Double = Double.MAX_VALUE, //每日最小值
-
     ) {
         override fun equals(other: Any?): Boolean {
             if (this === other) return true

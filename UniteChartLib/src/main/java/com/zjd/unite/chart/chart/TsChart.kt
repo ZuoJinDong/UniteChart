@@ -32,6 +32,7 @@ open class TsChart @JvmOverloads constructor(context: Context, attrs: AttributeS
 
     /** 所有时间点 */
     protected val timeAll = linkedSetOf<Long>()
+    /** <时间点，横坐标> */
     protected val timeAllMap = linkedMapOf<Long, Float>()
     /** 数据 */
     protected var tsHisList: MutableList<TsHisBean> = mutableListOf()
@@ -51,26 +52,8 @@ open class TsChart @JvmOverloads constructor(context: Context, attrs: AttributeS
         style = Paint.Style.FILL
     }
 
-    /** 财经地雷 */
-    private val financeList = mutableListOf<FinanceInfo>()
-
     fun setQuoteBean(dec: Int){
         mDec = dec
-    }
-
-    fun setCalendarFinance(list: MutableList<CalendarBean>){
-        financeList.clear()
-        val timeSet = mutableSetOf<Long>()
-
-        list.forEach {
-            timeSet.add(it.time)
-        }
-
-        timeSet.forEach { time ->
-            val sameTimeList = list.filter { it.time == time }
-            list.removeAll(sameTimeList)
-            financeList.add(FinanceInfo(time, sameTimeList))
-        }
     }
 
     /** 副图 */
@@ -117,9 +100,10 @@ open class TsChart @JvmOverloads constructor(context: Context, attrs: AttributeS
 //            }
 
             midValue = tsHis.yersterdayClose
-
+            //可见数据即全部数据
             listVisible.addAll(tsHis.pointList)
 
+            //最大、最小、可见长度均为所有时间点长度
             visibleCountMax = timeAll.size
             visibleCountMin = timeAll.size
             visibleCount = timeAll.size
@@ -319,36 +303,12 @@ open class TsChart @JvmOverloads constructor(context: Context, attrs: AttributeS
         }
     }
 
-    override fun drawXValue(canvas: Canvas) {
-        super.drawXValue(canvas)
-        drawCalendarFinanceCircle(canvas)
-    }
-
-    /** 财经地雷圆点半径 */
-    private val financeRadius = dp2px(3f)
-
-    /**
-     * 财经地雷圆点
-     */
-    private fun drawCalendarFinanceCircle(canvas: Canvas) {
-        linePaint.style = Paint.Style.FILL
-        linePaint.color = colorRed
-        financeList.forEach { info ->
-            getXByTime(info.time)?.let { x ->
-                info.x = x
-                info.circleRect.set(x - 4 * financeRadius, chartHeight - 4 * financeRadius, x + 4 * financeRadius, chartHeight + 4 * financeRadius)
-                canvas.drawCircle(x, chartHeight, financeRadius, linePaint)
-            }
-        }
-    }
-
-
     /**
      * 边框
      */
     override fun drawOutline(canvas: Canvas) {
         super.drawOutline(canvas)
-
+        //根据不同时间段绘制垂直线段
         tsHisList.firstOrNull()?.let { hisBean ->
             hisBean.tradeTime.forEachIndexed { index, tradeTimeBean ->
                 if(index > 0){
@@ -501,6 +461,7 @@ open class TsChart @JvmOverloads constructor(context: Context, attrs: AttributeS
         }
     }
 
+    /** 计算右侧百分比 */
     override fun formatRightValue(gapSize: Int) {
         if(midValue != 0.0){
             textPaint.textSize = textSizeDef
@@ -523,6 +484,7 @@ open class TsChart @JvmOverloads constructor(context: Context, attrs: AttributeS
         }
     }
 
+    /** 根据时间段起点计算X轴数值 */
     override fun formatXValue() {
         tsHisList.firstOrNull()?.let { tsHis ->
             xValue.clear()
@@ -621,14 +583,5 @@ open class TsChart @JvmOverloads constructor(context: Context, attrs: AttributeS
      * 通过时间查找横坐标
      */
     protected fun getXByTime(time: Long): Float? = timeAllMap[time]
-
-    /**
-     * 财经地雷信息
-     */
-    class FinanceInfo(var time: Long, //时间
-                      var finances: List<CalendarBean>, //信息
-                      var x: Float = 0f, //横坐标
-                      val circleRect: RectF = RectF(0f,0f,0f,0f), //圆点区域（用于点击）
-                      val rects: List<RectF> = mutableListOf()) //信息区域（用于点击）
 
 }

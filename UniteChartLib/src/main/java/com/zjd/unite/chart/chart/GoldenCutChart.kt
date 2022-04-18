@@ -12,19 +12,19 @@ import kotlin.math.roundToInt
 /**
  * @author ZJD
  * @date 2021/4/26
- * @desc
+ * @desc 黄金分割
  **/
 abstract class GoldenCutChart<T : Any> @JvmOverloads constructor(
         context: Context, attrs: AttributeSet? = null, defStyleAttr: Int = 0
 ): BaseChart<T>(context, attrs, defStyleAttr) {
 
     /** 黄金分割 */
-    //比例
+    //分割比例
     private var goldenRates: DoubleArray = doubleArrayOf(0.000, 0.191, 0.382, 0.500, 0.618, 0.809, 1.000)
     // 最大值 最小值
     private var mGoldenMax: Double? = null
     private var mGoldenMin: Double? = null
-    // 是否上涨
+    // 是否上涨趋势
     private var isGoldUp = false
     // 0: 无操作 1：移动最大值 2：移动最小值 3：整体移动 4：最大值横移 5：最小值横移
     private var goldenFlag = 0
@@ -57,6 +57,7 @@ abstract class GoldenCutChart<T : Any> @JvmOverloads constructor(
         style = Paint.Style.FILL
     }
 
+    /** 打开/关闭黄金分割 */
     abstract fun openGoldenCut(open: Boolean)
 
     fun isShowGoldenCut(): Boolean = !mCutSteps.isNullOrEmpty()
@@ -68,6 +69,12 @@ abstract class GoldenCutChart<T : Any> @JvmOverloads constructor(
         invalidate()
     }
 
+    /**
+     * 子类 openGoldenCut中 设置黄金分割参数
+     * @param max 最大值
+     * @param min 最小值
+     * @param isUp 是否上涨趋势
+     */
     protected fun formatGoldenParams(max: Double, min: Double, isUp: Boolean){
         canvasBitmap = null
         showCross = false
@@ -97,6 +104,9 @@ abstract class GoldenCutChart<T : Any> @JvmOverloads constructor(
         return prices
     }
 
+    /**
+     * 在顶层绘制
+     */
     override fun drawTopView(canvas: Canvas) {
         drawGoldenCut(canvas)
     }
@@ -181,6 +191,9 @@ abstract class GoldenCutChart<T : Any> @JvmOverloads constructor(
     private val scaleBitmapDst = RectF()
     private val scaleBitmapSrc = Rect()
 
+    /**
+     * 绘制放大区域
+     */
     private fun drawGoldenScale(canvas: Canvas) {
         if (goldenScaleBitmap != null && mGoldenMax != null && mGoldenMin != null) {
             val scaleCenterX: Float
@@ -231,15 +244,19 @@ abstract class GoldenCutChart<T : Any> @JvmOverloads constructor(
             requestParentDisallowInterceptTouchEvent(true)
             when(event.action){
                 MotionEvent.ACTION_DOWN -> {
+                    //判断触摸点是否在三个区域内 三个区域Rect在drawGoldenCut时赋值
                     when {
+                        //移动最大值
                         goldenTopRect.contains(event.x, event.y) -> {
                             requestParentDisallowInterceptTouchEvent(true)
                             goldenFlag = 1
                         }
+                        //移动最小值
                         goldenBottomRect.contains(event.x, event.y) -> {
                             requestParentDisallowInterceptTouchEvent(true)
                             goldenFlag = 2
                         }
+                        //整体移动
                         goldenCutRect.contains(event.x, event.y) -> {
                             requestParentDisallowInterceptTouchEvent(true)
                             goldenFlag = 3
@@ -252,20 +269,26 @@ abstract class GoldenCutChart<T : Any> @JvmOverloads constructor(
                     if (goldenFlag != 0) {
                         requestParentDisallowInterceptTouchEvent(true)
                         if (goldenFlag == 1 || goldenFlag == 4) {
+                            //最大值
                             mGoldenMax = getRealPrice(event.y)
                             if (goldenFlag == 4) {
+                                //最大值横移时重置最大值圆心横坐标
                                 goldenMaxX = event.x
                             }
                         } else if (goldenFlag == 2 || goldenFlag == 5) {
+                            //最小值
                             mGoldenMin = getRealPrice(event.y)
                             if (goldenFlag == 5) {
+                                //最小值横移时重置最小值圆心横坐标
                                 goldenMinX = event.x
                             }
                         } else if (goldenFlag == 3) {
+                            //整体移动 根据纵向偏移重新计算最大最小值
                             mGoldenMax = getRealPrice(getValueY(mGoldenMax!!) + event.y - goldenDownY)
                             mGoldenMin = getRealPrice(getValueY(mGoldenMin!!) + event.y - goldenDownY)
                             goldenDownY = event.y
                         }
+                        //重新计算分割点数值
                         goldenPrices = formatGoldenPrices()
                         invalidate()
                     }
@@ -304,6 +327,10 @@ abstract class GoldenCutChart<T : Any> @JvmOverloads constructor(
      */
     protected fun isShowingGoldCut() = mCutSteps.isNotEmpty()
 
+    /**
+     * 长按时判断是否在最大值最小值触摸区域内
+     * 是否执行横移
+     */
     override fun onLongPress(ev: MotionEvent) {
         if(isShowingGoldCut()){
             if (goldenFlag != 0) {
@@ -320,6 +347,10 @@ abstract class GoldenCutChart<T : Any> @JvmOverloads constructor(
         }
     }
 
+    /**
+     * 截图
+     * 用于绘制放大区域
+     */
     private fun getGoldenCutCatch() {
         goldenCutCatch = true
         invalidate()

@@ -118,6 +118,7 @@ class KAssistChart @JvmOverloads constructor(mContext: Context, attrs: Attribute
         mSingleClick?.onChartSingleClick(this as BaseChart<Any>)
     }
 
+    /** 重写虚线绘制 */
     override fun drawDashLineY(canvas: Canvas) {
         linePaint.pathEffect = dashPathEffect
         when(assistType){
@@ -143,6 +144,7 @@ class KAssistChart @JvmOverloads constructor(mContext: Context, attrs: Attribute
         linePaint.pathEffect = null
     }
 
+    /** 重写左侧数值绘制 */
     override fun drawYLeftValue(canvas: Canvas) {
         textPaint.textSize = textSizeDef
         textPaint.color = textColor
@@ -160,6 +162,7 @@ class KAssistChart @JvmOverloads constructor(mContext: Context, attrs: Attribute
         }
     }
 
+    /** 重写右侧数值绘制 */
     override fun drawYRightValue(canvas: Canvas) {
         when(assistType){
             K_ASSIST_TYPE_PSY,
@@ -170,6 +173,7 @@ class KAssistChart @JvmOverloads constructor(mContext: Context, attrs: Attribute
         }
     }
 
+    /** 绘制数据 */
     override fun drawData(canvas: Canvas) {
         mainChart?.let {
             when(assistType){

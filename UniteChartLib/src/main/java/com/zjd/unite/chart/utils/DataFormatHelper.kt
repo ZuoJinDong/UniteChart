@@ -87,72 +87,24 @@ object DataFormatHelper {
      * 计算K线指标
      */
     fun calculateK(dataList: List<KLineData>): Double {
-        var start = System.currentTimeMillis()
         calculateMA(dataList)
-        Log.d("calculate=====MA=", "${System.currentTimeMillis() - start}")
-
-        start = System.currentTimeMillis()
         calculateBOLL(dataList)
-        Log.d("calculate=====BOLL=", "${System.currentTimeMillis() - start}")
-
-        start = System.currentTimeMillis()
         calculateSAR(dataList)
-        Log.d("calculate=====SAR=", "${System.currentTimeMillis() - start}")
-
-        start = System.currentTimeMillis()
         calculateEXPMA(dataList)
-        Log.d("calculate=====EXPMA=", "${System.currentTimeMillis() - start}")
-
-        start = System.currentTimeMillis()
         calculateMACD(dataList)
-        Log.d("calculate=====MACD=", "${System.currentTimeMillis() - start}")
-
-        start = System.currentTimeMillis()
         calculateKDJ(dataList)
-        Log.d("calculate=====KDJ=", "${System.currentTimeMillis() - start}")
-
-        start = System.currentTimeMillis()
         calculateRSI(dataList)
-        Log.d("calculate=====RSI=", "${System.currentTimeMillis() - start}")
-
-        start = System.currentTimeMillis()
         calculateWR(dataList)
-        Log.d("calculate=====WR=", "${System.currentTimeMillis() - start}")
-
-        start = System.currentTimeMillis()
         calculateBIAS(dataList)
-        Log.d("calculate=====BIAS=", "${System.currentTimeMillis() - start}")
-
-        start = System.currentTimeMillis()
         calculateTRIX(dataList)
-        Log.d("calculate=====TRIX=", "${System.currentTimeMillis() - start}")
-
-        start = System.currentTimeMillis()
         calculatePSY(dataList)
-        Log.d("calculate=====PSY=", "${System.currentTimeMillis() - start}")
-
-        start = System.currentTimeMillis()
         calculateOBV(dataList)
-        Log.d("calculate=====OBV=", "${System.currentTimeMillis() - start}")
-
-        start = System.currentTimeMillis()
         calculateDMI(dataList)
-        Log.d("calculate=====DMI=", "${System.currentTimeMillis() - start}")
-
-        start = System.currentTimeMillis()
         calculateCCI(dataList)
-        Log.d("calculate=====CCI=", "${System.currentTimeMillis() - start}")
-
-        start = System.currentTimeMillis()
         calculateCR(dataList)
-        Log.d("calculate=====CR=", "${System.currentTimeMillis() - start}")
-
-        start = System.currentTimeMillis()
         calculateVolumeMA(dataList).let {
-            Log.d("calculate=====VolumeMA=", "${System.currentTimeMillis() - start}")
             return it
         }
-
     }
 
     /**

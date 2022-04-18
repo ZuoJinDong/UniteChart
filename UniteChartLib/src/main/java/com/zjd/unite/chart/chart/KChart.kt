@@ -254,9 +254,12 @@ class KChart @JvmOverloads constructor(mContext: Context, attrs: AttributeSet? =
 
     override fun drawData(canvas: Canvas) {
         if(visibleCount > 290){
+            //可见数据大于290时简单绘制趋势
             drawLine(canvas)
         }else{
+            //绘制蜡烛图
             drawCandle(canvas)
+            //绘制指标
             drawMainParams(canvas)
         }
     }
@@ -349,7 +352,9 @@ class KChart @JvmOverloads constructor(mContext: Context, attrs: AttributeSet? =
         ThreadUtils.executeByCached(object : ThreadUtils.Task<List<KLineData>>() {
             override fun doInBackground(): List<KLineData> {
                 sourceVisible = list
+                //合并数据
                 val listMerge = QuoteUtils.mergeKHisData(sourceVisible, periodTag)
+                //指标计算
                 DataFormatHelper.calculateK(listMerge)
                 return listMerge
             }
@@ -682,7 +687,6 @@ class KChart @JvmOverloads constructor(mContext: Context, attrs: AttributeSet? =
 
         listVisible.forEachIndexed { index, kLine ->
             kLine.apply {
-//                chartX = getValueX(index)
                 if(path.isEmpty){
                     path.moveTo(chartX, getValueY(high))
                 }else{

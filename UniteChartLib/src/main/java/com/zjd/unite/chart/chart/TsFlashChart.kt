@@ -57,15 +57,14 @@ class TsFlashChart @JvmOverloads constructor(mContext: Context, attrs: Attribute
         }
 
         tsHisBean?.let { tsHis ->
-
             listVisible.clear()
             listVisible.addAll(tsHisBean)
-
+            //固定显示600条数据
             visibleCountMax = 600
             visibleCountMin = 600
             visibleCount = 600
+            //取最多300条数据
             visibleLastIndex = tsHis.takeLast(300).size
-
             formatMaxAndMin()
         }
     }
@@ -183,6 +182,7 @@ class TsFlashChart @JvmOverloads constructor(mContext: Context, attrs: Attribute
 
     override fun formatMaxAndMin() {
         tsHisList.let {
+            //取最后300条数据计算最大最小值
             val maxEntity: FlashHisBean? = listVisible.takeLast(300).maxByOrNull { it.orig }
             val minEntity: FlashHisBean? = listVisible.takeLast(300).minByOrNull { it.orig }
 
